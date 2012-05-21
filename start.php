@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WordPress iSell
+Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
