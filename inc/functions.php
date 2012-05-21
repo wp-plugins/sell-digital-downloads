@@ -152,4 +152,11 @@ function isell_ignore_notice() {
              add_user_meta($user_id, 'isell_ignore_notice', 'true', true);
     }
 }
+
+//language
+function isell_load_plugin_textdomain() {
+  load_plugin_textdomain( 'isell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
+}
+add_action('plugins_loaded', 'isell_load_plugin_textdomain');
+
 ?>
