@@ -139,7 +139,7 @@ function isell_admin_notice() {
     if ( !current_user_can('manage_options') ) return;
     if ( ! get_user_meta($user_id, 'isell_ignore_notice') ) {
         echo '<div class="updated"><p>';
-        printf(__('Thank you for using the iSell Plugin, Please go to the <a href="%1$s">iSell settings</a> page to setup the plugin.'), admin_url().'?page=wp-isell/inc/functions.php&isell_ignore_notice=0');
+        printf(__('Thank you for using the iSell Plugin, Please go to the <a href="%1$s">iSell settings</a> page to setup the plugin.'), admin_url().'?page='. iSell_Dir_Name .'/inc/functions.php&isell_ignore_notice=0');
         echo "</p></div>";
     }
 }

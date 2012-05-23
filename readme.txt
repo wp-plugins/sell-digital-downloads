@@ -4,7 +4,7 @@ Donate link: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell
 Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,files,isell,muneeb
 Requires at least: 3.0
 Tested up to: 3.4
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,5 +55,8 @@ Very rare but sometimes users change the core files of the plugins or  install t
 
 == Changelog ==
 
+= 1.1 =
+* Permissions error when clicked on the iSell settings link bug fixed.
+
 = 1.0 =
-* This is the first version of the plugin. Please report bugs if you found one.ou found one.
+* This is the first version of the plugin. Please report bugs if you found one.

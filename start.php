@@ -3,13 +3,14 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
-Version: 1.0
+Version: 1.1
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Copyright 2012 Muneeb ur Rehman http://imuneeb.com
 */
-define( 'iSell_Path', plugin_dir_path(__FILE__) );
 
+define( 'iSell_Path', plugin_dir_path(__FILE__) );
+define( 'iSell_Dir_Name', dirname( plugin_basename( __FILE__ ) ));
 Class WordPress_iSell{
 	private $settings;
 	function __construct(){
