@@ -101,8 +101,8 @@ class IpnListener {
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt ($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt ($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         
         if ($this->force_ssl_v3) {
             curl_setopt($ch, CURLOPT_SSLVERSION, 3);

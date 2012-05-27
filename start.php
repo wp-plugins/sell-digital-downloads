@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
-Version: 1.1
+Version: 1.2
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Copyright 2012 Muneeb ur Rehman http://imuneeb.com
@@ -137,13 +137,16 @@ To view/edit the order, visit the following address:
 						'emails' => $emails
 					),
 				'isell' => array(
-						'version' => '1.0',
+						'version' => '1.2',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
 						'directory_name' => uniqid(),
 						'max_downloads' => 5
 					),
+				'advanced' => array(
+						'use_fsockopen_or_curl' => 'fsockopen'
+				)
 			);
 		if (get_option('isell_options') )
 			$isell_options = get_option('isell_options');
@@ -189,13 +192,16 @@ To view/edit the order, visit the following address:
 						'emails' => $emails
 					),
 				'isell' => array(
-						'version' => '1.0',
+						'version' => '1.2',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
 						'directory_name' => uniqid(),
 						'max_downloads' => 5
 					),
+				'advanced' => array(
+						'use_fsockopen_or_curl' => 'fsockopen'
+				)
 			);
 		return update_option('isell_options',$isell_options);
 
@@ -275,7 +281,15 @@ To view/edit the order, visit the following address:
 		//these scripts are only added to the admin screen
 		wp_enqueue_style('isell-all.css',plugins_url('css/all.css',__FILE__));
 		wp_enqueue_style("wp-jquery-ui-dialog");
-		wp_enqueue_script('jquery-ui-progressbar');
+		
+		global $wp_version;
+		if ( version_compare($wp_version,"3.3","<") ){
+			wp_enqueue_script('jquery-ui-widget');
+			wp_enqueue_script('jquery-ui-progressbar',plugins_url('js/jquery-ui-progressbar.js',__FILE__),array('jquery-ui-widget'));
+		}else{
+			wp_enqueue_script('jquery-ui-progressbar');
+		}
+		
 		wp_enqueue_script('plupload.js',plugins_url('js/plupload-full.js',__FILE__),array('jquery'),false,true);
 		wp_enqueue_script('isell-all.js',plugins_url('js/all.js',__FILE__),array('jquery'),false,true);
 		wp_localize_script( 'isell-all.js', 'isell', 

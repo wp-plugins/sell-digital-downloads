@@ -46,7 +46,7 @@
 <td>
 	<input name="directory_name"  type="text" id="directory_name" value="<?php echo esc_html($options['file_management']['directory_name']) ?>" class="regular-text disabled" disabled  />
 	<p class="description">
-		<?php echo __('Please make sure if this directory does not exist in the root folder of your site create it and also assign it only writeable and readable permissions otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
+		<?php echo __('After you upload a file from product edit screen please make sure if this directory does not exist in the root folder of your site create it and also assign it only writeable and readable permissions like "0750" otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
 	</p>
 </td>
 </tr>
@@ -81,6 +81,18 @@
 	<p class="description">
 		<?php echo __('Make sure you also include this shortcode on the page','isell'); ?>
 		<code>[isell_errors]</code>
+	</p>
+</td>
+</tr>
+<tr valign="top">
+<th scope="row"><label for="use_fsockopen_or_curl"><?php echo __('Use fsockopen or CURL','isell'); ?></label></th>
+<td>
+	<select name="use_fsockopen_or_curl" id="use_fsockopen_or_curl">
+		<option value="fsockopen"  <?php echo ($options['advanced']['use_fsockopen_or_curl']=='fsockopen') ? 'selected':''; ?>>fsockopen</option>
+		<option value="curl" <?php echo ($options['advanced']['use_fsockopen_or_curl']=='curl') ? 'selected':''; ?>>CURL</option>
+	</select>
+	<p class="description">
+		<?php echo __('If your server don\'t support these two please ask them to enable one of these for your site.','isell'); ?>
 	</p>
 </td>
 </tr>

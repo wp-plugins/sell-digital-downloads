@@ -11,6 +11,8 @@ if ( $platform == 'sandbox' )
 
 //set it to true to use fsockopen
 $listener->use_curl = false;
+if ( $options['advanced']['use_fsockopen_or_curl'] == 'curl' )
+	$listener->use_curl = true;
 
 try {
 	//verify that ipn is valid

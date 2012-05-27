@@ -86,7 +86,7 @@ function isell_save_settings($options){
 			'error_page' => $_POST['error_page']
 		);
 	$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
-
+	$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
 	update_option('isell_options',$options);
 	return $options;
 }
