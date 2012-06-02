@@ -4,7 +4,7 @@ Donate link: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell
 Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,files,isell,muneeb
 Requires at least: 3.0
 Tested up to: 3.4
-Stable tag: 1.2
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,10 +55,10 @@ Very rare but sometimes users change the core files of the plugins or  install t
 
 == Changelog ==
 
-= 1.2 =
-* Instructions on settings updated, Added the option to select fsockopen or curl for PayPal IPN and fixed the file upload progress for WP 3.2
+= 1.3 =
+* bugs fixed
 
-= 1.1 =
+= 1.2 =
 * Permissions error when clicked on the iSell settings link bug fixed.
 
 = 1.0 =

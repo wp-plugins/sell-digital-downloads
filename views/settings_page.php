@@ -46,7 +46,7 @@
 <td>
 	<input name="directory_name"  type="text" id="directory_name" value="<?php echo esc_html($options['file_management']['directory_name']) ?>" class="regular-text disabled" disabled  />
 	<p class="description">
-		<?php echo __('After you upload a file from product edit screen please make sure if this directory does not exist in the root folder of your site create it and also assign it only writeable and readable permissions like "0750" otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
+		<?php echo __('After you upload a file from product edit screen please make sure if this directory does not exist in the root folder of your site create it and also assign it only writeable and readable permissions like "0755" otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
 	</p>
 </td>
 </tr>
@@ -92,7 +92,7 @@
 		<option value="curl" <?php echo ($options['advanced']['use_fsockopen_or_curl']=='curl') ? 'selected':''; ?>>CURL</option>
 	</select>
 	<p class="description">
-		<?php echo __('If your server don\'t support these two please ask them to enable one of these for your site.','isell'); ?>
+		<?php echo __('If your host don\'t support both ask them to enable one for your site.','isell'); ?>
 	</p>
 </td>
 </tr>

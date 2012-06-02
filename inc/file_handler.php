@@ -22,11 +22,11 @@ class iSell_File_Handler{
 	function upload_file(){
 		if ( !file_exists($this->directory_path) ){
 			@mkdir($this->directory_path);
-			@chmod($this->directory_path,'0750');
+			//@chmod($this->directory_path,'0755');
 		}
 		if ( !file_exists($this->directory_path.DIRECTORY_SEPARATOR.$this->post_id) ){
 			@mkdir($this->directory_path.DIRECTORY_SEPARATOR.$this->post_id);
-			@chmod($this->directory_path,'0750');
+			//@chmod($this->directory_path,'0755');
 		}
 		
 		$move_path = $this->directory_path.DIRECTORY_SEPARATOR.$this->post_id.DIRECTORY_SEPARATOR.$this->file_name;
