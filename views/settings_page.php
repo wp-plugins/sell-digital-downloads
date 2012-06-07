@@ -1,6 +1,12 @@
 <div class="wrap">
 <div id="icon-options-general" class="icon32"><br></div><h2><?php echo __('Settings','isell'); ?></h2>
 
+<?php if ( $show_settings_updated_notice ): ?>
+	<div id="message" class="updated below-h2" style="margin:5px">
+		<p><?php echo __('Settings updated.'); ?></p>
+	</div>
+<?php endif; ?>
+
 <form method="post" action="">
 <input type="hidden" name="isell_options_page" value="general">
 <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('isell_options_page'); ?>" />
@@ -84,6 +90,30 @@
 	</p>
 </td>
 </tr>
+
+<tr valign="top">
+<th scope="row"><label for="thanks_page"><?php echo __('Thanks Page','isell'); ?></label></th>
+<td>
+	<select name="thanks_page"> 
+	 <option value="">
+	<?php echo esc_attr( __( 'Select page' ) ); ?></option> 
+	 <?php 
+	  $pages = get_pages(); 
+	  foreach ( $pages as $page ) {
+	  	$selected = ( $options['store']['thanks_page'] === get_page_link( $page->ID ) ) ? 'selected': '';
+	  	$option = '<option ' . $selected .' value="' . get_page_link( $page->ID ) . '">';
+		$option .= $page->post_title;
+		$option .= '</option>';
+		echo $option;
+	  }
+	 ?>
+	</select>
+	<p class="description">
+		<?php echo __('PayPal will redirect customers to this page after Payment is completed successfully','isell'); ?>
+	</p>
+</td>
+</tr>
+
 <tr valign="top">
 <th scope="row"><label for="use_fsockopen_or_curl"><?php echo __('Use fsockopen or CURL','isell'); ?></label></th>
 <td>

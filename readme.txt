@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: Muneeb
 Donate link: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
-Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,files,isell,muneeb
+Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,files,isell,muneeb,files,plupupload
 Requires at least: 3.0
 Tested up to: 3.4
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

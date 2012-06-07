@@ -26,8 +26,8 @@ if ( $verified ){
 	if ( $_POST['payment_status'] == 'Completed' ){
 		 if ( $_POST['receiver_email'] == $options['paypal']['email'] ){
 		 	$product_id = $_POST['item_number'];
-		 	$price = get_post_meta($product_id,'product_price',true);
-		 	if ( $_POST['mc_gross'] == $price ){
+		 	$price = (float)get_post_meta($product_id,'product_price',true);
+		 	if ( (float)$_POST['mc_gross'] >= $price ){
 		 		if ( $_POST['mc_currency'] == $options['store']['currency'] ){
 		 			global $wpdb;
 		 			$txn_id = mysql_real_escape_string(esc_html($_POST['txn_id']));

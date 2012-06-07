@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
-Version: 1.3
+Version: 1.4
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Copyright 2012 Muneeb ur Rehman http://imuneeb.com
@@ -98,6 +98,9 @@ Class WordPress_iSell{
 		define('ISELL_DOWNLOAD_LINK_EXPIRED',3);
 		define('ISELL_DOWNLOAD_EXCEED_ERROR',4);
 		define('ISELL_NO_FILE',5);
+
+		//file chunk size
+		define('iSell_CHUNK_SIZE', 1024*6024);
 	}
 	function options(){
 		$errors = array(
@@ -134,10 +137,11 @@ To view/edit the order, visit the following address:
 						'currency' => 'USD',
 						'error_page' => '',
 						'errors' => $errors,
-						'emails' => $emails
+						'emails' => $emails,
+						'thanks_page' => ''
 					),
 				'isell' => array(
-						'version' => '1.2',
+						'version' => '1.4',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
@@ -189,10 +193,11 @@ To view/edit the order, visit the following address:
 						'currency' => 'USD',
 						'error_page' => '',
 						'errors' => $errors,
-						'emails' => $emails
+						'emails' => $emails,
+						'thanks_page' => ''
 					),
 				'isell' => array(
-						'version' => '1.2',
+						'version' => '1.4',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
@@ -592,21 +597,22 @@ To view/edit the order, visit the following address:
 			//invalid parameters do nothing
 			die(0);
 		}
+		
 		if ( $payment_info['txn_id'] != $trans_id  ){
 			//invalid transaction id
-			wp_redirect(sprintf('%s?isell_error=%d',$error_page,1));
+			isell_error_redirect(ISELL_INVALID_TXN_ID,$error_page);
 		}
 		if ( strtolower($payment_info['status']) != 'completed' ){
 			//payment is pending or not made 
-			wp_redirect(sprintf('%s?isell_error=%d',$error_page,2));
+			isell_error_redirect(ISELL_PAYMENT_NOT_COMPLETED,$error_page);
 		}
 		if ( strtolower($product_info['link_status']) != 'valid' ){
 			//link has been expired
-			wp_redirect(sprintf('%s?isell_error=%d',$error_page,3));
+			isell_error_redirect(ISELL_DOWNLOAD_LINK_EXPIRED,$error_page);
 		}
 		if ( (int)$product_info['downloads'] >= (int)$max_downloads  ){
 			//downloads exceeds the max number of downloads allowed in settings
-			wp_redirect(sprintf('%s?isell_error=%d',$error_page,4));
+			isell_error_redirect(ISELL_DOWNLOAD_EXCEED_ERROR,$error_page);
 		}
 		
 		$file_name = get_post_meta($product_id,'product_file_name',true);
@@ -616,23 +622,39 @@ To view/edit the order, visit the following address:
 		}
 		
 		if (file_exists($file)) {
+			
 			ob_start();
 			$product_info['downloads'] += 1;
 			update_post_meta($order_id,'product_info',$product_info);
-		    header('Content-Description: File Transfer');
-		    header('Content-Type: application/octet-stream');
-		    header('Content-Disposition: attachment; filename='.basename($file_name));
-		    header('Content-Transfer-Encoding: binary');
-		    header('Expires: 0');
-		    header('Cache-Control: must-revalidate');
-		    header('Pragma: public');
-		    header('Content-Length: ' . filesize($file));
-		    ob_clean();
-		    flush();
-		    readfile($file);
+			if ( function_exists('apache_get_modules') 
+      && in_array('mod_xsendfile', apache_get_modules()) ){
+				header ('X-Sendfile: ' . $file);
+			    header('Content-Description: File Transfer');
+			    header('Content-Type: application/octet-stream');
+			    header('Content-Disposition: attachment; filename='.basename($file_name));
+			    header('Content-Transfer-Encoding: binary');
+			    header('Expires: 0');
+			    header('Cache-Control: must-revalidate');
+			    header('Pragma: public');
+			    header('Content-Length: ' . filesize($file));
+			}else{
+				set_time_limit(0);
+				header('Content-Description: File Transfer');
+			    header('Content-Type: application/octet-stream');
+			    header('Content-Disposition: attachment; filename='.basename($file_name));
+			    header('Content-Transfer-Encoding: binary');
+			    header('Expires: 0');
+			    header('Cache-Control: must-revalidate');
+			    header('Pragma: public');
+			    header('Content-Length: ' . filesize($file));
+			    ob_clean();
+			    flush();
+			    //readfile($file);
+			    $this->readfile_chunked($file);
+			}
 		    exit;
 		}
-		wp_redirect(sprintf('%s?isell_error=%d',$error_page,5));
+		isell_error_redirect(ISELL_NO_FILE,$error_page);
 		die();
 	}
 	function process_paypal_ipn(){
@@ -665,10 +687,13 @@ To view/edit the order, visit the following address:
 							'currency_code' => $options['store']['currency'],
 							'cmd' => '_xclick',
 							'business' => $options['paypal']['email'],
+							'receiver_email' => $options['paypal']['email'],
 							'item_name' => $product_name,
 							'amount' => $amount,
 						    'item_number' => (int)$product_id,
-						    'notify_url' => $notify_url
+						    'notify_url' => $notify_url,
+						    'return' => $options['store']['thanks_page'],
+						    'rm' => 2
 
 						);
 					$parameters = apply_filters('isell_payment_gateway_parameters', $parameters);
@@ -787,6 +812,29 @@ To view/edit the order, visit the following address:
       	 ob_end_clean();
       	 return $return_content;
 	}
+	function readfile_chunked($filename, $retbytes = TRUE){
+	    $buffer = '';
+	    $cnt =0;
+	    
+	    $handle = fopen($filename, 'rb');
+	    if ($handle === false) {
+	      return false;
+	    }
+	    while (!feof($handle)) {
+	      $buffer = fread($handle, iSell_CHUNK_SIZE);
+	      echo $buffer;
+	      ob_flush();
+	      flush();
+	      if ($retbytes) {
+	        $cnt += strlen($buffer);
+	      }
+	    }
+	    $status = fclose($handle);
+	    if ($retbytes && $status) {
+	      return $cnt; // return num. bytes delivered like readfile() does.
+	    }
+	    return $status;
+  }
 	
 }
 

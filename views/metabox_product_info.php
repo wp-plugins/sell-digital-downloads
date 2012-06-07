@@ -15,7 +15,7 @@ if (!current_user_can('edit_post')) wp_die( __('You do not have sufficient permi
     <tr valign="top">
        <th scope="row"><strong><label for="product_price"><?php echo __('Product Price:','isell'); ?></label><strong></th>
        <td>
-       		<input type="number" value="<?php echo get_post_meta($post_id,'product_price',true); ?>" id="product_price" name="product_price" min="0" required  /><span class="currency" style="font-weight:bold"><?php echo $currency; ?></span>
+       		<input type="text" value="<?php echo get_post_meta($post_id,'product_price',true); ?>" id="product_price" name="product_price"  required  /><span class="currency" style="font-weight:bold"><?php echo $currency; ?></span>
        		<p class="description"><?php echo __('Enter only a numeric value','isell'); ?></p>
         </td>
     </tr>

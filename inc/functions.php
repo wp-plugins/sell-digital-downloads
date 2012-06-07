@@ -83,8 +83,9 @@ function isell_save_settings($options){
 		);
 	$options['store'] = array(
 			'currency' => $_POST['currency'],
-			'error_page' => $_POST['error_page']
-		);
+			'error_page' => $_POST['error_page'],
+			'thanks_page' => $_POST['thanks_page']
+ 		);
 	$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
 	$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
 	update_option('isell_options',$options);
@@ -95,14 +96,32 @@ if ( !function_exists('isell_settings_page_view') ){
 function isell_settings_page_view(){
 	$options = get_option('isell_options');
 	$currencies = isell_currencies();
+	$show_settings_updated_notice = false;
 	if ( isset($_POST['submit']) && isset($_POST['isell_options_page']) ){
 		if ( !wp_verify_nonce($_POST['nonce'],'isell_options_page') ) return;
 		$options = isell_save_settings($options);
+		$show_settings_updated_notice = true;
 	}
 	
 	include_once(iSell_Path.'/views/settings_page.php');
 }
 }
+
+if ( !function_exists('isell_error_redirect') ){
+	function isell_error_redirect($error_code,$error_page=NULL){
+		if ( $error_page == NULL ) return;
+
+		$default_string = "%s?isell_error=%d";
+
+		if ( !get_option('permalink_structure') )
+			$default_string = "%s&isell_error=%d";
+		
+		wp_redirect(sprintf($default_string,$error_page,$error_code));
+		exit;
+	}
+}
+
+
 function isell_currencies(){
 	return array('USD' => array('title' => 'U.S. Dollar', 'code' => 'USD', 'symbol_left' => '$', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'EUR' => array('title' => 'Euro', 'code' => 'EUR', 'symbol_left' => '', 'symbol_right' => '€', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
@@ -152,7 +171,6 @@ function isell_ignore_notice() {
              add_user_meta($user_id, 'isell_ignore_notice', 'true', true);
     }
 }
-
 //language
 function isell_load_plugin_textdomain() {
   load_plugin_textdomain( 'isell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
