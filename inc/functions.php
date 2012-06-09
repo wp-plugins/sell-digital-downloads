@@ -76,35 +76,38 @@ function isell_settings_page(){
 	add_menu_page(__('iSell Settings','isell'), 'iSell', 'manage_options', __FILE__, 'isell_settings_page_view');
 }
 if ( !function_exists('isell_save_settings') ){
-function isell_save_settings($options){
-	$options['paypal'] = array(
-			'email' => $_POST['paypal_email'],
-			'platform' => $_POST['paypal_platform']
-		);
-	$options['store'] = array(
-			'currency' => $_POST['currency'],
-			'error_page' => $_POST['error_page'],
-			'thanks_page' => $_POST['thanks_page']
- 		);
-	$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
-	$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
-	update_option('isell_options',$options);
-	return $options;
-}
+	function isell_save_settings($options){
+		if ( !current_user_can('manage_options') ) return false;
+
+		$options['paypal'] = array(
+				'email' => $_POST['paypal_email'],
+				'platform' => $_POST['paypal_platform']
+			);
+		$options['store'] = array(
+				'currency' => $_POST['currency'],
+				'error_page' => $_POST['error_page'],
+				'thanks_page' => $_POST['thanks_page']
+	 		);
+		$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
+		$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
+		update_option('isell_options',$options);
+		return $options;
+	}
 }
 if ( !function_exists('isell_settings_page_view') ){
-function isell_settings_page_view(){
-	$options = get_option('isell_options');
-	$currencies = isell_currencies();
-	$show_settings_updated_notice = false;
-	if ( isset($_POST['submit']) && isset($_POST['isell_options_page']) ){
-		if ( !wp_verify_nonce($_POST['nonce'],'isell_options_page') ) return;
-		$options = isell_save_settings($options);
-		$show_settings_updated_notice = true;
+	function isell_settings_page_view() {
+		$options = get_option('isell_options');
+		$currencies = isell_currencies();
+		$show_settings_updated_notice = false;
+
+		if ( isset($_POST['submit']) && isset($_POST['isell_options_page']) ){
+			if ( !wp_verify_nonce($_POST['nonce'],'isell_options_page') ) return;
+			$options = isell_save_settings($options);
+			$show_settings_updated_notice = true;
+		}
+		
+		include_once(iSell_Path.'/views/settings_page.php');
 	}
-	
-	include_once(iSell_Path.'/views/settings_page.php');
-}
 }
 
 if ( !function_exists('isell_error_redirect') ){

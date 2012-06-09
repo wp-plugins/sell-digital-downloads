@@ -26,14 +26,15 @@ if ( $verified ){
 	if ( $_POST['payment_status'] == 'Completed' ){
 		 if ( $_POST['receiver_email'] == $options['paypal']['email'] ){
 		 	$product_id = $_POST['item_number'];
-		 	$price = (float)get_post_meta($product_id,'product_price',true);
-		 	if ( (float)$_POST['mc_gross'] >= $price ){
+		 	$price = get_post_meta($product_id,'product_price',true);
+		 	if ( !$price ) return;
+		 	if ( (float)$_POST['mc_gross'] >= (float)$price ){
 		 		if ( $_POST['mc_currency'] == $options['store']['currency'] ){
 		 			global $wpdb;
-		 			$txn_id = mysql_real_escape_string(esc_html($_POST['txn_id']));
+		 			$txn_id = $wpdb->escape($_POST['txn_id']);
 					$txn_id_query = $wpdb->prepare( "SELECT * 
 									 FROM  $wpdb->postmeta 
-									 WHERE  meta_value =  %s",$txn_id);
+									 WHERE  meta_value =  %s AND meta_key = %s",$txn_id,'txn_id');
 					if ( $wpdb->query($txn_id_query) >= 1 ) exit;
 		 			$payer_email = $_POST['payer_email'];
 		 			$payment_status = esc_html($_POST['payment_status']);
@@ -91,7 +92,33 @@ if ( $verified ){
 		 		}
 		 	}
 		 }
-	}
-}
+	}else {
+		if ( $_POST['payment_status'] == 'Refunded' ) {
+			if ( $_POST['receiver_email'] == $options['paypal']['email'] ){
+		 		global $wpdb;
+		 		$txn_id = $wpdb->escape($_POST['txn_id']);
+				$txn_id_query = $wpdb->prepare( "SELECT post_id 
+									FROM  $wpdb->postmeta 
+									WHERE  meta_value =  %s AND meta_key = %s",$txn_id,'txn_id');
+				$order_id = $wpdb->get_var($txn_id_query);
+				$product_id = $wpdb->escape($_POST['item_number']);
 
+				if ( $order_id  ) {
+					update_post_meta($order_id,'ipn_text_report',$listener->getTextReport());
+					$payment_info = get_post_meta($order_id,'payment_info',true);
+					$payment_info['status'] = 'Refunded';
+					update_post_meta($order_id,'payment_info',$payment_info);
+					$product_name = get_the_title($product_id);
+					$order_title = sprintf("Order: %s | ID: %s | Status: %s",$product_name,$txn_id,$payment_info['status']);
+					$order_post = array(
+							'ID' => $order_id,
+							'post_title' => wp_strip_all_tags($order_title)
+						);
+					wp_update_post($order_post);
+
+				}
+		 	}
+		}//end payment status refunded 
+	} 
+}
 ?>

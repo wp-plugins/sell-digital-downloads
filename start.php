@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
-Version: 1.4
+Version: 1.5
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Copyright 2012 Muneeb ur Rehman http://imuneeb.com
@@ -98,6 +98,7 @@ Class WordPress_iSell{
 		define('ISELL_DOWNLOAD_LINK_EXPIRED',3);
 		define('ISELL_DOWNLOAD_EXCEED_ERROR',4);
 		define('ISELL_NO_FILE',5);
+		define('ISELL_PAYMENT_REFUNDED',6);
 
 		//file chunk size
 		define('iSell_CHUNK_SIZE', 1024*6024);
@@ -108,7 +109,8 @@ Class WordPress_iSell{
 				ISELL_PAYMENT_NOT_COMPLETED => __('Your payment is not yet completed yet please contact us to resolve the issue.','isell'),
 				ISELL_DOWNLOAD_LINK_EXPIRED => __('The product download link is expired. Please contact us','isell'),
 				ISELL_DOWNLOAD_EXCEED_ERROR => __('You had exceeded the maximum number of downloads allowed for an order. Contact us to resolve this issue','isell'),
-				ISELL_NO_FILE => __('The product does not have any files','isell')
+				ISELL_NO_FILE => __('The product does not have any files','isell'),
+				ISELL_PAYMENT_REFUNDED => __('Your order is refunded, You cannot download file now')
 		);
 $emails = array(
 		'order_customer_product_download' => array(
@@ -164,7 +166,8 @@ To view/edit the order, visit the following address:
 				ISELL_PAYMENT_NOT_COMPLETED => __('Your payment is not yet completed yet please contact us to resolve the issue.','isell'),
 				ISELL_DOWNLOAD_LINK_EXPIRED => __('The product download link is expired. Please contact us','isell'),
 				ISELL_DOWNLOAD_EXCEED_ERROR => __('You had exceeded the maximum number of downloads allowed for an order. Contact us to resolve this issue','isell'),
-				ISELL_NO_FILE => __('The product does not have any files','isell')
+				ISELL_NO_FILE => __('The product does not have any files','isell'),
+				ISELL_PAYMENT_REFUNDED => __('Your order is refunded, You cannot download file now')
 		);
 $emails = array(
 		'order_customer_product_download' => array(
@@ -602,7 +605,11 @@ To view/edit the order, visit the following address:
 			//invalid transaction id
 			isell_error_redirect(ISELL_INVALID_TXN_ID,$error_page);
 		}
-		if ( strtolower($payment_info['status']) != 'completed' ){
+		if ( strtolower($payment_info['status']) == 'refunded' ){
+			//order is Refunded
+			isell_error_redirect(ISELL_PAYMENT_REFUNDED,$error_page);
+		}
+		if ( strtolower($payment_info['status']) == 'pending' ){
 			//payment is pending or not made 
 			isell_error_redirect(ISELL_PAYMENT_NOT_COMPLETED,$error_page);
 		}
@@ -649,7 +656,6 @@ To view/edit the order, visit the following address:
 			    header('Content-Length: ' . filesize($file));
 			    ob_clean();
 			    flush();
-			    //readfile($file);
 			    $this->readfile_chunked($file);
 			}
 		    exit;
@@ -831,7 +837,7 @@ To view/edit the order, visit the following address:
 	    }
 	    $status = fclose($handle);
 	    if ($retbytes && $status) {
-	      return $cnt; // return num. bytes delivered like readfile() does.
+	      return $cnt; 
 	    }
 	    return $status;
   }
