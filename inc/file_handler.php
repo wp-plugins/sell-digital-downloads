@@ -20,6 +20,8 @@ class iSell_File_Handler{
 		}
 	}
 	function upload_file(){
+		do_action('isell_upload_file',$this->file,$this->post_id,$this->file_name);
+
 		if ( !file_exists($this->directory_path) ){
 			@mkdir($this->directory_path);
 			//@chmod($this->directory_path,'0755');
@@ -165,6 +167,9 @@ class iSell_File_Handler{
 			update_post_meta($this->post_id,'product_file',$move_path);
 			update_post_meta($this->post_id,'product_contains_file',true);
 			update_post_meta($this->post_id,'orginal_file_name',$this->file_name);
+
+			do_action('isell_file_upload_complete',$this->post_id);
+
 			return true;
 		}
 
@@ -173,10 +178,13 @@ class iSell_File_Handler{
 		return false;
 		
 	}
+	
 	function validate(){
 		$this->file_name = preg_replace('/[^\w\._]+/', '_', $this->file_name);
 	}
+
 	function delete_file($post_id){
+		do_action('isell_delete_file',$this->post_id);
 
 		$delete_path = get_post_meta($post_id,'product_file',true);
 
@@ -184,6 +192,8 @@ class iSell_File_Handler{
 		delete_post_meta($this->post_id,'product_file');
 		delete_post_meta($this->post_id,'product_contains_file');
 		delete_post_meta($this->post_id,'orginal_file_name');
+		do_action('isell_delete_file_completed',$this->post_id);
+		
 		return $result;
 	}
 	

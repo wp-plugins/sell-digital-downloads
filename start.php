@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
 Author: Muneeb
-Version: 1.5
+Version: 1.6
 Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
 Copyright 2012 Muneeb ur Rehman http://imuneeb.com
@@ -36,6 +36,10 @@ Class WordPress_iSell{
 
 		include(iSell_Path . 'inc/file_handler.php');
 		include(iSell_Path . 'inc/functions.php');
+
+		//shows isell new feature pointer/tooltip which will be used to highlight new features
+		include(iSell_Path . 'inc/new_feature_pointer.php');
+
 	}
 	function actions(){
 		//load scripts only on admin dashboard
@@ -78,7 +82,13 @@ Class WordPress_iSell{
 		add_action('isell_payment_completed',array($this,'send_notification_emails'),10,2);
 
 		//isell errors shortcode
-		add_shortcode('isell_errors',array($this,'isell_errors'));
+		add_shortcode('isell_errors',array($this,'shortcode_isell_errors'));
+
+		//isell download page shortcode
+		add_shortcode('isell_download_page',array($this,'shortcode_isell_download_page'));
+
+		//to make shortcode redirects work using ob_start at the start of init
+		add_action( 'init', array( $this, 'init_ob_start' ) );
 		
 
 	}
@@ -92,6 +102,9 @@ Class WordPress_iSell{
 
 	}
 	function constants(){
+		//isell version
+		define('ISELL_VERSION','1.6');
+
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
 		define('ISELL_PAYMENT_NOT_COMPLETED',2);
@@ -140,10 +153,11 @@ To view/edit the order, visit the following address:
 						'error_page' => '',
 						'errors' => $errors,
 						'emails' => $emails,
-						'thanks_page' => ''
+						'thanks_page' => '',
+						'download_page' => ''
 					),
 				'isell' => array(
-						'version' => '1.4',
+						'version' => '1.6',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
@@ -158,6 +172,9 @@ To view/edit the order, visit the following address:
 			$isell_options = get_option('isell_options');
 		else
 			add_option('isell_options',$isell_options,'','yes');
+
+		if ( ! get_option( 'isell_version' ) )
+			add_option( 'isell_version', ISELL_VERSION, '', 'yes');
 
 	}
 	function reset_options(){
@@ -197,10 +214,11 @@ To view/edit the order, visit the following address:
 						'error_page' => '',
 						'errors' => $errors,
 						'emails' => $emails,
-						'thanks_page' => ''
+						'thanks_page' => '',
+						'download_page' => ''
 					),
 				'isell' => array(
-						'version' => '1.4',
+						'version' => '1.6',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
@@ -582,15 +600,24 @@ To view/edit the order, visit the following address:
 			die();
 		}
 	 	
+
+
+
 		$product_id = (int)$_REQUEST['product'];
 		$order_id = (int)$_REQUEST['order'];
-		$trans_id = (int)$_REQUEST['trans'];
+		$trans_id = $_REQUEST['trans'];
 		$options = isell_get_options();
 		$error_page = $options['store']['error_page'];
 		$error_page = apply_filters('isell_error_page_url', $error_page);
 		$max_downloads = (int)$options['file_management']['max_downloads'];
+		$download_page = $options['store']['download_page'];
 
-		if ( !is_int($product_id) || !is_int($order_id) || !is_int($trans_id) ){
+		if ( !isset( $_REQUEST['do_redirect'] ) && !empty($download_page)  ){
+			wp_redirect( isell_download_page_link( $trans_id, $order_id, $download_page ) );
+			exit;
+		}
+
+		if ( !is_int($product_id) || !is_int($order_id)  ){
 			die();
 		}
 		$payment_info = get_post_meta($order_id,'payment_info',true);
@@ -627,6 +654,8 @@ To view/edit the order, visit the following address:
 		if ( !$file_name ){
 			$file_name = $file;
 		}
+
+		do_action('isell_product_download_validation_complete',$order_id,$product_id);
 		
 		if (file_exists($file)) {
 			
@@ -658,6 +687,7 @@ To view/edit the order, visit the following address:
 			    flush();
 			    $this->readfile_chunked($file);
 			}
+			do_action('isell_product_download_complete',$order_id);
 		    exit;
 		}
 		isell_error_redirect(ISELL_NO_FILE,$error_page);
@@ -752,7 +782,15 @@ To view/edit the order, visit the following address:
 		$payer_email = $data['payer_email'];
 		$product_id = (int)$data['item_number'];
 		$txn_id = $data['txn_id'];
-		$product_download_url = isell_generate_product_download_url($order_id,$product_id,$txn_id);
+		
+		$options = isell_get_options();
+		$download_page = $options['store']['download_page'];
+		
+		$product_download_url = isell_download_page_link( $txn_id, $order_id, $download_page );
+
+		if ( empty($download_page) )
+			$product_download_url = isell_generate_product_download_url($order_id,$product_id,$txn_id);
+
 		$customer_name = wp_strip_all_tags($data['address_name']);
 		$product_name = get_post_meta($product_id,'product_name',true);
 		
@@ -806,11 +844,14 @@ To view/edit the order, visit the following address:
 		
 		wp_mail(get_option('admin_email'),$subject,$message);
 	}
-	function isell_errors($atts, $content=null){
+	function shortcode_isell_errors($atts, $content=null){
 		 extract( shortcode_atts( array(
       				'show' => true,
       	 ), $atts ) );
       	 if ( !$show ) return;
+
+      	 if ( ! isset( $_REQUEST['isell_error'] ) ) return;
+
       	 $error_code = $_REQUEST['isell_error'];
       	 ob_start();
       	 echo apply_filters('isell_error',$this->get_error($error_code),$error_code);
@@ -818,6 +859,88 @@ To view/edit the order, visit the following address:
       	 ob_end_clean();
       	 return $return_content;
 	}
+
+	function shortcode_isell_download_page( $atts, $content = null ){
+
+		extract( shortcode_atts( array(
+      				'show' => true,
+      				'link_text' => __('click here','isell'),
+      				'other_text' => __('If your download does not start automatically, ','isell')
+      	 ), $atts ) );
+
+		
+
+		if ( ! isset( $_REQUEST['trans'] ) || ! isset( $_REQUEST['order'] ) ) return;
+		$txn_id = $_REQUEST['trans'];
+		$order_id = (int)$_REQUEST['order'];
+
+		if ( ! is_int( $order_id ) ) return;
+
+		if ( get_post_status( $order_id ) != 'publish' ) return;
+
+		$product_info = get_post_meta( $order_id, 'product_info', true );
+
+		if ( ! $product_info ) return;
+
+		$product_id = (int)$product_info['id'];
+		
+		if ( ! is_int( $product_id ) ) return;
+
+		$options = isell_get_options();
+		$error_page = $options['store']['error_page'];
+		$error_page = apply_filters('isell_error_page_url', $error_page);
+		$max_downloads = (int)$options['file_management']['max_downloads'];
+
+		$payment_info = get_post_meta($order_id,'payment_info',true);
+		if ( ! $payment_info ) return;
+		
+		if ( !get_post_meta($product_id,'product_file',true)  ){
+			//no file exists
+			isell_error_redirect(ISELL_NO_FILE,$error_page);
+		}
+
+		if ( $payment_info['txn_id'] != $txn_id  ){
+			//invalid transaction id
+			isell_error_redirect(ISELL_INVALID_TXN_ID,$error_page);
+		}
+
+		if ( strtolower($payment_info['status']) == 'refunded' ){
+			//order is Refunded
+			isell_error_redirect(ISELL_PAYMENT_REFUNDED,$error_page);
+		}
+
+		if ( strtolower($payment_info['status']) == 'pending' ){
+			//payment is pending or not made 
+			isell_error_redirect(ISELL_PAYMENT_NOT_COMPLETED,$error_page);
+		}
+
+		if ( strtolower($product_info['link_status']) != 'valid' ){
+			//link has been expired
+			isell_error_redirect(ISELL_DOWNLOAD_LINK_EXPIRED,$error_page);
+
+		}
+
+		if ( (int)$product_info['downloads'] >= (int)$max_downloads  ){
+			//downloads exceeds the max number of downloads allowed in settings
+			isell_error_redirect(ISELL_DOWNLOAD_EXCEED_ERROR,$error_page);
+		}
+
+
+
+		$download_link = isell_generate_product_download_url( $order_id, $product_id, $txn_id.'&do_redirect=false' );
+		$download_link = apply_filters('isell_download_page_download_url', $download_link, $txn_id, $order_id);
+		
+		ob_start();
+
+		include(iSell_Path.'views/shortcode_download_page.php');
+
+		 $return_content = ob_get_contents();
+      	 ob_end_clean();
+      	 return $return_content;
+
+
+	}
+
 	function readfile_chunked($filename, $retbytes = TRUE){
 	    $buffer = '';
 	    $cnt =0;
@@ -840,6 +963,11 @@ To view/edit the order, visit the following address:
 	      return $cnt; 
 	    }
 	    return $status;
+  }
+
+  function init_ob_start(){
+  		//for shortcode redirects
+  		ob_start();
   }
 	
 }

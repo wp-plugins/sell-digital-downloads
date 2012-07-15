@@ -115,6 +115,30 @@
 </tr>
 
 <tr valign="top">
+<th scope="row"><label for="download_page"><?php echo __('Download Page','isell'); ?></label></th>
+<td>
+	<select name="download_page"> 
+	 <option value="">
+	<?php echo esc_attr( __( 'Select page' ) ); ?></option> 
+	 <?php 
+	  $pages = get_pages(); 
+	  foreach ( $pages as $page ) {
+	  	$selected = ( $options['store']['download_page'] === get_page_link( $page->ID ) ) ? 'selected': '';
+	  	$option = '<option ' . $selected .' value="' . get_page_link( $page->ID ) . '">';
+		$option .= $page->post_title;
+		$option .= '</option>';
+		echo $option;
+	  }
+	 ?>
+	</select>
+	<p class="description">
+		<?php echo __('If download page is not set the product download will start with an empty blank page which may confuse users. Make sure you include this shortcode on the page','isell'); ?>
+		<code>[isell_download_page]</code>
+	</p>
+</td>
+</tr>
+
+<tr valign="top">
 <th scope="row"><label for="use_fsockopen_or_curl"><?php echo __('Use fsockopen or CURL','isell'); ?></label></th>
 <td>
 	<select name="use_fsockopen_or_curl" id="use_fsockopen_or_curl">

@@ -61,6 +61,7 @@ function isell_generate_product_url($product_id){
 		$product_url = sprintf('%s?iproduct=%s',site_url(),$product_id);
 		return apply_filters ( 'isell_product_url' , $product_url, $product_id );
 }
+
 function isell_generate_product_download_url($order_id,$product_id,$txn_id){
 	$product_download_url = sprintf("%s?action=%s&product=%s&order=%s&trans=%s",admin_url( 'admin-ajax.php'),'isell_download_file',$product_id,$order_id,$txn_id);
 	return apply_filters ( 'isell_product_download_url' ,$product_download_url, $order_id, $product_id, $txn_id );
@@ -69,6 +70,7 @@ function isell_generate_product_download_url($order_id,$product_id,$txn_id){
 function isell_shortcode_list_product_files(){
 		
 }
+
 function isell_get_options(){
 	return get_option('isell_options');
 }
@@ -86,7 +88,8 @@ if ( !function_exists('isell_save_settings') ){
 		$options['store'] = array(
 				'currency' => $_POST['currency'],
 				'error_page' => $_POST['error_page'],
-				'thanks_page' => $_POST['thanks_page']
+				'thanks_page' => $_POST['thanks_page'],
+				'download_page' => $_POST['download_page']
 	 		);
 		$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
 		$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
@@ -112,7 +115,10 @@ if ( !function_exists('isell_settings_page_view') ){
 
 if ( !function_exists('isell_error_redirect') ){
 	function isell_error_redirect($error_code,$error_page=NULL){
-		if ( $error_page == NULL ) return;
+		if ( $error_page == NULL ) {
+			$options = isell_get_options();
+			$error_page = $options['store']['error_page'];
+		}
 
 		$default_string = "%s?isell_error=%d";
 
@@ -122,6 +128,24 @@ if ( !function_exists('isell_error_redirect') ){
 		wp_redirect(sprintf($default_string,$error_page,$error_code));
 		exit;
 	}
+}
+
+function isell_download_page_link( $txn_id, $order_id, $download_page = NULL ) {
+	
+	if ( $download_page == NULL ) {
+		$options = isell_get_options();
+		$download_page = $options['store']['download_page'];
+	}
+
+	$default_string = "%s?trans=%s&order=%s";
+
+	if ( ! get_option( 'permalink_structure' ) )
+			$default_string = "%s&trans=%s&order=%s";
+
+	return sprintf( $default_string, $download_page, $txn_id, $order_id );
+	//wp_redirect( sprintf( $default_string, $download_page, $txn_id, $order_id ) );
+	//exit;
+
 }
 
 
