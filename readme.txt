@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: Muneeb
-Donate link: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
-Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,isell,muneeb,files,plupupload
+Donate link: http://muneeb.me/wordpress-sell-digital-downloads-wordpress-isell/
+Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,isell,muneeb,files,plupupload,free
 Requires at least: 3.0
-Tested up to: 3.4.1
-Stable tag: 1.6
+Tested up to: 3.4.2
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ Lots of WordPress E-commerce plugins are trying to integrate the digital product
 
 iSell is a simple WordPress sell digital downloads plugin. It integrates flawlessly with Paypal. UI of the plugin is very easy to use, I call this plugin for users not developers but developers should not feel left behind I know how pain it is to modify clients plugins and then know after few weeks or months that they had updated the plugin and boom all changes are lost, there are filters and hooks for almost every important thing in iSell. There is also pluggable functions support for some advanced purposes.
 
-Being relatively new plugin some features are not yet added one of them is multiple payment gateways support. I would love to know your feedback and feature suggestions for plugin either [contact me directly](http://imuneeb.com/contact/) or post your feedback on the [plugin support forums](http://imuneeb.com/support/forum/wordpress-isell/).
+Being relatively new plugin some features are not yet added one of them is multiple payment gateways support. I would love to know your feedback and feature suggestions for plugin either [contact me directly](http://muneeb.me/contact/) or post your feedback on the [plugin support forums](http://muneeb.me/support/forum/wordpress-isell/).
 
 
 
@@ -27,7 +27,7 @@ Being relatively new plugin some features are not yet added one of them is multi
 *   iSell is also a Developer friendly plugin and very extendable, changes if made correctly wouldn't get lost after plugin updates
 *	Very secure file downloads not just links to files like some plugins do.
 
-[Visit my website to learn more about the plugin](http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/)
+[Visit my website to learn more about the plugin](http://muneeb.me/wordpress-sell-digital-downloads-wordpress-isell/)
 
 == Installation ==
 
@@ -54,6 +54,9 @@ You are most welcome I would love to hear your thoughts, please use the plugin s
 Very rare but sometimes users change the core files of the plugins or  install the plugin on older versions of WordPress where the plugin might not work correctly to resolve the issue delete or rename the plugin using ftp from the 'wp-content/plugins' directory.
 
 == Changelog ==
+
+= 1.7 =
+* Plugin dashboard menu position changed, new metabox("other information") for product post type, new submenu "support forums" added, support for pending payment status added and new hooks/filters are added
 
 = 1.6 =
 * download page support added, new hooks/filters, various bug fixed and stability improvements
