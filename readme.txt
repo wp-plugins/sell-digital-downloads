@@ -4,7 +4,7 @@ Donate link: http://muneeb.me/wordpress-sell-digital-downloads-wordpress-isell/
 Tags: ecommerce,e-commerce plugin,commerce,paypal,sell digital downloads,sell digital products,products,paypal ipn,orders,notifications,emails,free,isell,muneeb,files,plupupload,free
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 1.7
+Stable tag: 1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ Being relatively new plugin some features are not yet added one of them is multi
 *   Create unlimited products and can also create custom orders
 *   Manage products and orders through standard WordPress UI almost same like as you manage your posts/pages.
 *   Works flawlessly with the latest version of WordPress.
-*   iSell is also a Developer friendly plugin and very extendable, changes if made correctly wouldn't get lost after plugin updates
+*   iSell is developer friendly plugin and very extendable, changes if made correctly wouldn't get lost after plugin updates
 *	Very secure file downloads not just links to files like some plugins do.
 
 [Visit my website to learn more about the plugin](http://muneeb.me/wordpress-sell-digital-downloads-wordpress-isell/)
@@ -54,6 +54,9 @@ You are most welcome I would love to hear your thoughts, please use the plugin s
 Very rare but sometimes users change the core files of the plugins or  install the plugin on older versions of WordPress where the plugin might not work correctly to resolve the issue delete or rename the plugin using ftp from the 'wp-content/plugins' directory.
 
 == Changelog ==
+
+= 1.8 =
+* some design improvements and new icons added for products and orders post type, new custom columns for product and order are added to products and orders screens(All Product/Orders), settings page link in admin notice fixed, pages now use ID on settings page instead of URLS
 
 = 1.7 =
 * Plugin dashboard menu position changed, new metabox("other information") for product post type, new submenu "support forums" added, support for pending payment status added and new hooks/filters are added
