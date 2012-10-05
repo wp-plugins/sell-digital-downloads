@@ -315,7 +315,7 @@ function isell_custom_edit_icons_on_edit_screen() {
 
 function isell_get_product_price( $product_id  ) {
 	
-	$price = isell_get_product_meta( $product_id );
+	$price = isell_get_product_meta( $product_id, 'product_price' );
 	
 	$price = apply_filters( 'isell_product_price', $price, $product_id );
 	
@@ -326,10 +326,9 @@ function isell_format_product_price( $product_id ) {
 		
 		$price = isell_get_product_price( $product_id );
 		
-		$price = apply_filters( 'isell_format_product_price', $price, $product_id );	
-		
+		$price = apply_filters( 'isell_format_product_price', $price, $product_id );
+
 		return $price;
-		
 }
 
 function isell_get_product_meta( $product_id, $meta_key ) {
