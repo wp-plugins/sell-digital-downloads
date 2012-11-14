@@ -58,7 +58,7 @@ function isell_remove_post_row_actions( $actions )
 }
 
 function isell_generate_product_url($product_id){
-		$product_url = sprintf('%s?iproduct=%s',site_url(),$product_id);
+		$product_url = sprintf('%s/?iproduct=%s',site_url(),$product_id);
 		return apply_filters ( 'isell_product_url' , $product_url, $product_id );
 }
 
@@ -74,9 +74,86 @@ function isell_shortcode_list_product_files(){
 function isell_get_options(){
 	return get_option('isell_options');
 }
-function isell_settings_page(){
-	add_menu_page(__('iSell Settings','isell'), 'iSell', 'manage_options', __FILE__, 'isell_settings_page_view');
+
+
+function isell_generate_order_title( $order_id = NULL, $args = NULL, $title_format = NULL ) {
+	
+	if ( $title_format == NULL )
+		$title_format = 'Product Name: %s | ID: %s | Payment Status: %s | Amount Paid: %s | Buyer Name: %s | Buyer Email: %s';
+		
+	if ( $order_id == NULL ) {
+		
+		$defaults = array( 
+				'product_name' => '',
+				'txn_id' => '',
+				'payment_status' => '',
+				'amount_paid' => '',
+				'buyer_name' => '',
+				'buyer_email' => ''
+			);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		extract( $args, EXTR_SKIP );
+		
+		$title = sprintf( 
+			$title_format,
+			$product_name, $txn_id, $payment_status, $amount_paid, $buyer_name, $buyer_email
+		 );
+		
+		return $title;
+	}
+	
+	if ( $args == NULL  ) {
+		
+		$buyer_info = get_post_meta( $order_id, 'buyer_info', true );
+		$payment_info = get_post_meta( $order_id, 'payment_info', true );
+		$product_info = get_post_meta( $order_id, 'product_info', true );
+		$product_id = $product_info['id'];
+		
+		$product_name = get_the_title( $product_id );
+		
+		$txn_id = $payment_info['txn_id'];
+		$payment_status = $payment_info['status'];
+		$amount_paid = $payment_info['amount_paid'];
+		
+		$buyer_name = $buyer_info['first_name'] . ' ' . $buyer_info['last_name'];
+		$buyer_email = $buyer_info['email'];	
+		
+		
+		
+		$title = sprintf( 
+			$title_format,
+			$product_name, $txn_id, $payment_status, $amount_paid, $buyer_name, $buyer_email
+		 );
+		 
+		 return $title;
+	}
+	
+	
 }
+
+function isell_settings_page(){
+	$menu_slug = 'isell_settings_page';
+	$icon_url = plugins_url() . '/' . iSell_Dir_Name  .  '/images/menu-icon.png'; 
+
+	add_object_page(__('iSell Settings','isell'), 'iSell', 'manage_options', $menu_slug, 'isell_settings_page_view', $icon_url);
+	
+	do_action('isell_admin_menu', $menu_slug);
+
+	//add_submenu_page($menu_slug,__('Support Forums','isell'), 'Support Forums', 'manage_options', 'isell_redirect_to_support', 'isell_support_forum_redirect', 1);
+	
+	do_action('isell_admin_menu_after', $menu_slug);
+
+}
+
+function isell_support_forum_redirect() {
+
+	$link = 'http://muneeb.me/support/';
+	wp_redirect( $link );
+
+}
+
 if ( !function_exists('isell_save_settings') ){
 	function isell_save_settings($options){
 		if ( !current_user_can('manage_options') ) return false;
@@ -115,11 +192,16 @@ if ( !function_exists('isell_settings_page_view') ){
 
 if ( !function_exists('isell_error_redirect') ){
 	function isell_error_redirect($error_code,$error_page=NULL){
+		
 		if ( $error_page == NULL ) {
 			$options = isell_get_options();
-			$error_page = $options['store']['error_page'];
+			
+			if ( is_numeric( $error_page ) )
+				$error_page = get_permalink( $options['store']['error_page'] );
+			else
+				$error_page = $options['store']['error_page'];
 		}
-
+		
 		$default_string = "%s?isell_error=%d";
 
 		if ( !get_option('permalink_structure') )
@@ -134,7 +216,11 @@ function isell_download_page_link( $txn_id, $order_id, $download_page = NULL ) {
 	
 	if ( $download_page == NULL ) {
 		$options = isell_get_options();
-		$download_page = $options['store']['download_page'];
+		
+		if( is_numeric( $download_page ) )
+			$download_page = get_permalink( $options['store']['download_page'] );
+		else
+			$download_page = $options['store']['download_page']; 
 	}
 
 	$default_string = "%s?trans=%s&order=%s";
@@ -165,7 +251,7 @@ function isell_currencies(){
                            'SGD' => array('title' => 'Singapore Dollar', 'code' => 'SGD', 'symbol_left' => '$', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'BRL' => array('title' => 'Brazilian Real', 'code' => 'BRL', 'symbol_left' => 'R$', 'symbol_right' => '', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'CNY' => array('title' => 'Chinese RMB', 'code' => 'CNY', 'symbol_left' => '￥', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
-                           'CZK' => array('title' => 'Czech Koruna', 'code' => 'CZK', 'symbol_left' => '', 'symbol_right' => 'Kč', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
+                           'CZK' => array('title' => 'Czech Koruna', 'code' => 'CZK', 'symbol_left' => '', 'symbol_right' => 'K�?', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'DKK' => array('title' => 'Danish Krone', 'code' => 'DKK', 'symbol_left' => '', 'symbol_right' => 'kr', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'HUF' => array('title' => 'Hungarian Forint', 'code' => 'HUF', 'symbol_left' => '', 'symbol_right' => 'Ft', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'ILS' => array('title' => 'Israeli New Shekel', 'code' => 'ILS', 'symbol_left' => '₪', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
@@ -177,31 +263,100 @@ function isell_currencies(){
                            'TWD' => array('title' => 'Taiwan New Dollar', 'code' => 'TWD', 'symbol_left' => 'NT$', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'));
 }
 
+if ( ! function_exists( 'isell_calc_product_storage_size' ) ) {
+	function isell_calc_product_storage_size( $product_directory_path ) {
+
+		$storage_size = 0;
+		if ( class_exists('RecursiveIteratorIterator') && class_exists('RecursiveDirectoryIterator') && file_exists( $product_directory_path ) ) {
+		    foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($product_directory_path)) as $file){ 
+		        $storage_size += $file->getSize(); 
+		   	}
+	   	}
+
+	   	return $storage_size;
+
+	}
+}
+
 add_action('admin_notices', 'isell_admin_notice');
+add_action('admin_init', 'isell_ignore_notice');
+
 function isell_admin_notice() {
-    global $current_user ;
-    $user_id = $current_user->ID;
-        /* Check that the user hasn't already clicked to ignore the message */
-    if ( !current_user_can('manage_options') ) return;
-    if ( ! get_user_meta($user_id, 'isell_ignore_notice') ) {
+   
+    if ( ! current_user_can('manage_options') ) return;
+    if ( ! get_option( 'isell_ignore_installed_notice' ) ) {
         echo '<div class="updated"><p>';
-        printf(__('Thank you for using the iSell Plugin, Please go to the <a href="%1$s">iSell settings</a> page to setup the plugin.'), admin_url().'?page='. iSell_Dir_Name .'/inc/functions.php&isell_ignore_notice=0');
+        printf(__('Thank you for using the iSell Plugin, Please go to the <a href="%1$s">iSell settings</a> page to setup the plugin.'), admin_url().'?page=isell_settings_page&isell_ignore_notice=0');
         echo "</p></div>";
     }
 }
-add_action('admin_init', 'isell_ignore_notice');
 function isell_ignore_notice() {
-    global $current_user;
-        $user_id = $current_user->ID;
-        /* If user clicks to ignore the notice, add that to their user meta */
-        if ( isset($_GET['isell_ignore_notice']) && '0' == $_GET['isell_ignore_notice'] ) {
-             add_user_meta($user_id, 'isell_ignore_notice', 'true', true);
-    }
+	
+	if ( isset($_GET['isell_ignore_notice']) && '0' == $_GET['isell_ignore_notice'] ) {
+		add_option( 'isell_ignore_installed_notice', true );
+	}
+    
 }
-//language
+
+
+//language translation
 function isell_load_plugin_textdomain() {
   load_plugin_textdomain( 'isell', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
 }
 add_action('plugins_loaded', 'isell_load_plugin_textdomain');
+
+add_action( 'admin_head', 'isell_custom_edit_icons_on_edit_screen' );
+
+function isell_custom_edit_icons_on_edit_screen() {
+	
+	include iSell_Path . '/views/custom_edit_icons_style.php';
+	
+}
+
+function isell_get_product_price( $product_id  ) {
+	
+	$price = isell_get_product_meta( $product_id, 'product_price' );
+	
+	$price = apply_filters( 'isell_product_price', $price, $product_id );
+	
+	return $price;
+}
+
+function isell_format_product_price( $product_id ) {
+		
+		$price = isell_get_product_price( $product_id );
+		
+		$price = apply_filters( 'isell_format_product_price', $price, $product_id );
+
+		return $price;
+}
+
+function isell_get_product_meta( $product_id, $meta_key ) {
+	return get_post_meta( $product_id, $meta_key, true  );
+}
+
+function isell_update_product_meta( $product_id, $meta_key, $meta_value ) {
+	return update_post_meta( $product_id, $meta_key, $meta_value );
+}
+
+function isell_add_product_meta( $product_id, $meta_key, $meta_value, $unique  ) {
+	return add_post_meta( $product_id, $meta_key, $meta_value, $unique );
+}
+
+
+function isell_get_order_meta( $order_id, $meta_key ) {
+	return get_post_meta( $order_id, $meta_key, true  );
+}
+
+function isell_update_order_meta( $order_id, $meta_key, $meta_value ) {
+	return update_post_meta( $order_id, $meta_key, $meta_value );
+}
+
+function isell_add_order_meta( $order_id, $meta_key, $meta_value, $unique  ) {
+	return add_post_meta( $order_id, $meta_key, $meta_value, $unique );
+}
+
+
+
 
 ?>

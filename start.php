@@ -1,12 +1,11 @@
 <?php
 /*
 Plugin Name: WordPress iSell - Sell Digital Downloads
-Description: All in one plugin let you sell your digital products and manage your orders from WordPress.
-Author: Muneeb
-Version: 1.6
-Author URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
-Plugin URI: http://imuneeb.com/wordpress-sell-digital-downloads-wordpress-isell/
-Copyright 2012 Muneeb ur Rehman http://imuneeb.com
+Description: All in one plugin to sell your digital products and manage your orders from WordPress.
+Author: wpecommerce
+Version: 1.9
+Author URI: http://wp-ecommerce.net/
+Plugin URI: http://wp-ecommerce.net/?p=1916
 */
 
 define( 'iSell_Path', plugin_dir_path(__FILE__) );
@@ -38,7 +37,7 @@ Class WordPress_iSell{
 		include(iSell_Path . 'inc/functions.php');
 
 		//shows isell new feature pointer/tooltip which will be used to highlight new features
-		include(iSell_Path . 'inc/new_feature_pointer.php');
+		//include(iSell_Path . 'inc/new_feature_pointer.php');
 
 	}
 	function actions(){
@@ -75,9 +74,6 @@ Class WordPress_iSell{
 		//redirect if 'iproduct' is set, to paypal buy now page
 		add_action('init',array($this,'do_product_redirect'));
 
-		//create isell settings/options page
-		add_action('admin_menu', 'isell_settings_page');
-
 		//send a new order notification email to admin and send an email containing a product download link to customer
 		add_action('isell_payment_completed',array($this,'send_notification_emails'),10,2);
 
@@ -90,7 +86,20 @@ Class WordPress_iSell{
 		//to make shortcode redirects work using ob_start at the start of init
 		add_action( 'init', array( $this, 'init_ob_start' ) );
 		
+		//create isell settings/options page
+		add_action('admin_menu', 'isell_settings_page');
+				
+		//show custom column data for isell-product post type
+		add_action( 'manage_isell-product_posts_custom_column', array( $this, 'display_column_data_for_isell_product' ), 10, 2  );
+		
+		//show custom column data for isell-order post type
+		add_action( 'manage_isell-order_posts_custom_column', array( $this, 'display_column_data_for_isell_order' ), 10, 2  );
 
+		
+		//increase the sales figure of a single product by 1 if that product payment is completed successfully
+		add_action( 'isell_payment_completed', array( $this, 'add_sale_to_isell_product' ), 10, 2 );
+		
+		
 	}
 	function filters(){
 		//change the message text for product post and order post
@@ -99,11 +108,17 @@ Class WordPress_iSell{
 
 		//remove the post row actions from orders and products custom post type
 		add_filter( 'post_row_actions', 'isell_remove_post_row_actions', 10, 1 );
+		
+		//add custom columns to isell-product post type
+		add_filter( 'manage_edit-isell-product_columns', array( $this, 'add_custom_columns_to_isell_product' ) );
+		
+		//add custom columns to isell-order post type
+		add_filter( 'manage_edit-isell-order_columns', array( $this, 'add_custom_columns_to_isell_order' ) );
 
 	}
 	function constants(){
 		//isell version
-		define('ISELL_VERSION','1.6');
+		define('ISELL_VERSION','1.8');
 
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
@@ -117,93 +132,26 @@ Class WordPress_iSell{
 		define('iSell_CHUNK_SIZE', 1024*6024);
 	}
 	function options(){
-		$errors = array(
-				ISELL_INVALID_TXN_ID => __('The transcaction ID is invalid.','isell'),
-				ISELL_PAYMENT_NOT_COMPLETED => __('Your payment is not yet completed yet please contact us to resolve the issue.','isell'),
-				ISELL_DOWNLOAD_LINK_EXPIRED => __('The product download link is expired. Please contact us','isell'),
-				ISELL_DOWNLOAD_EXCEED_ERROR => __('You had exceeded the maximum number of downloads allowed for an order. Contact us to resolve this issue','isell'),
-				ISELL_NO_FILE => __('The product does not have any files','isell'),
-				ISELL_PAYMENT_REFUNDED => __('Your order is refunded, You cannot download file now')
-		);
-$emails = array(
-		'order_customer_product_download' => array(
-				'subject' => __('Your {product_name} File Download - Order {txn_id}','isell'),
-				'message' => __('Dear {customer_name},
-
-Thank you for your order.  You may download using the following URL:
-
-{product_download_url}','isell')
-			),
-		'admin_new_order' => array(
-				'subject' => __('iSell Notification: New Order: {txn_id} - {customer_name} - {product_name}','isell'),
-				'message' => __('You have received a new order for {product_name}
-
-To view/edit the order, visit the following address:
-
-{edit_order_link}','isell')
-			)  
-	);
-		$isell_options = array(
-				'paypal' => array(
-						'email' => 'example@example.com',
-						'platform' => 'sandbox'
-					),
-				'store' => array(
-						'currency' => 'USD',
-						'error_page' => '',
-						'errors' => $errors,
-						'emails' => $emails,
-						'thanks_page' => '',
-						'download_page' => ''
-					),
-				'isell' => array(
-						'version' => '1.6',
-						'developer' => 'Muneeb'
-					),
-				'file_management' => array(
-						'directory_name' => uniqid(),
-						'max_downloads' => 5
-					),
-				'advanced' => array(
-						'use_fsockopen_or_curl' => 'fsockopen'
-				)
-			);
+		
+		$isell_options = $this->default_options();
+		
 		if (get_option('isell_options') )
 			$isell_options = get_option('isell_options');
 		else
 			add_option('isell_options',$isell_options,'','yes');
 
-		if ( ! get_option( 'isell_version' ) )
-			add_option( 'isell_version', ISELL_VERSION, '', 'yes');
+		add_option( 'isell_version', ISELL_VERSION, '', 'yes');
 
 	}
-	function reset_options(){
-		$errors = array(
-				ISELL_INVALID_TXN_ID => __('The transcaction ID is invalid.','isell'),
-				ISELL_PAYMENT_NOT_COMPLETED => __('Your payment is not yet completed yet please contact us to resolve the issue.','isell'),
-				ISELL_DOWNLOAD_LINK_EXPIRED => __('The product download link is expired. Please contact us','isell'),
-				ISELL_DOWNLOAD_EXCEED_ERROR => __('You had exceeded the maximum number of downloads allowed for an order. Contact us to resolve this issue','isell'),
-				ISELL_NO_FILE => __('The product does not have any files','isell'),
-				ISELL_PAYMENT_REFUNDED => __('Your order is refunded, You cannot download file now')
-		);
-$emails = array(
-		'order_customer_product_download' => array(
-				'subject' => __('Your {product_name} File Download - Order {txn_id}','isell'),
-				'message' => __('Dear {customer_name},
-
-Thank you for your order.  You may download using the following URL:
-
-{product_download_url}','isell')
-			),
-		'admin_new_order' => array(
-				'subject' => __('iSell Notification: New Order: {txn_id} - {customer_name} - {product_name}','isell'),
-				'message' => __('You have received a new order for {product_name}
-
-To view/edit the order, visit the following address:
-
-{edit_order_link}','isell')
-			)  
-	);
+	function default_options(){
+		
+		include ( iSell_Path . '/views/isell_errors.php' );
+		include ( iSell_Path . '/views/notification_emails.php' );
+				
+		$curl_or_fsockopen = 'curl';
+		if (!extension_loaded('curl') && !@dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))
+			$curl_or_fsockopen = 'fsockopen';
+		
 		$isell_options = array(
 				'paypal' => array(
 						'email' => 'example@example.com',
@@ -218,7 +166,7 @@ To view/edit the order, visit the following address:
 						'download_page' => ''
 					),
 				'isell' => array(
-						'version' => '1.6',
+						'version' => '1.8',
 						'developer' => 'Muneeb'
 					),
 				'file_management' => array(
@@ -226,10 +174,11 @@ To view/edit the order, visit the following address:
 						'max_downloads' => 5
 					),
 				'advanced' => array(
-						'use_fsockopen_or_curl' => 'fsockopen'
+						'use_fsockopen_or_curl' => $curl_or_fsockopen
 				)
 			);
-		return update_option('isell_options',$isell_options);
+		
+		return $isell_options;
 
 	}
 	function product_delete_file(){
@@ -249,12 +198,12 @@ To view/edit the order, visit the following address:
 		}
 		
 		$post_id = (int)$_REQUEST['post_id'];
-		$file_name = get_post_meta($post_id,'orginal_file_name',true);
+		$file_name = get_post_meta($post_id,'original_file_name',true);
 		$file_handler = new iSell_File_Handler($post_id,$file_name);
-		if ( !$file_handler->delete_file($post_id) ){
+		if ( $file_handler->delete_file($post_id) == 'not-deleted' ){
 			$response = array(
 				'status' => 2,
-				'message' => __('Unable to delete the file either file is deleted or does not exist also please make sure you have set the upload directory permissions compatible with this plugin. The file records for this product may get deleted.','isell')
+				'message' => __('Unable to delete the file, either file is deleted or does not exist also please make sure you have set the upload directory permissions compatible with this plugin. The file records for this product may get deleted refresh the page to upload new file','isell')
 			);
 			
 		}
@@ -285,8 +234,8 @@ To view/edit the order, visit the following address:
 		header("Pragma: no-cache");
 		header('Content-type: application/json');
 
-		// 10 minutes execution time
-		@set_time_limit(10 * 60); 
+		// 100 minutes execution time
+		@set_time_limit(100 * 60); 
 
 		//init the isell file uploader class and validate the request then move the file upload work to the file handler class
 		
@@ -305,8 +254,8 @@ To view/edit the order, visit the following address:
 	function admin_enqueue($page){
 
 		//these scripts are only added to the admin screen
-		wp_enqueue_style('isell-all.css',plugins_url('css/all.css',__FILE__));
-		wp_enqueue_style("wp-jquery-ui-dialog");
+		wp_enqueue_style( 'isell-all.css', plugins_url('css/all.css',__FILE__), array(), ISELL_VERSION );
+		wp_enqueue_style( 'wp-jquery-ui-dialog' );
 		
 		global $wp_version;
 		if ( version_compare($wp_version,"3.3","<") ){
@@ -316,14 +265,29 @@ To view/edit the order, visit the following address:
 			wp_enqueue_script('jquery-ui-progressbar');
 		}
 		
-		wp_enqueue_script('plupload.js',plugins_url('js/plupload-full.js',__FILE__),array('jquery'),false,true);
-		wp_enqueue_script('isell-all.js',plugins_url('js/all.js',__FILE__),array('jquery'),false,true);
+		wp_enqueue_script( 'plupload.js', plugins_url('js/plupload-full.js',__FILE__), array('jquery'), false, true );
+		wp_enqueue_script( 'isell-all.js', plugins_url('js/all.js',__FILE__), array('jquery'), ISELL_VERSION , true);
+
+		$plupload_params = array(
+				'runtimes' => apply_filters('isell_plupload_runtime','gears,html5,flash,silverlight,browserplus'),
+				'browse_button' => apply_filters('isell_plupload_browse_button','pickfiles'),
+				'container' => apply_filters('isell_plupload_container','uploader'),
+				'chunk_size' => apply_filters('isell_plupload_chunk_size','2mb'),
+				'unique_names' => apply_filters('isell_plupload_unique_names',true),
+				'multi_selection' => apply_filters('isell_plupload_multi_selection',false),
+				'multipart' => apply_filters('isell_plupload_multipart',true),
+				'url' => apply_filters('isell_plupload_url', admin_url( 'admin-ajax.php' ) ),
+				'multipart_params_action' => apply_filters('isell_plupload_multipart_params_action','isell_file_upload'),
+				'flash_swf_url' => plugins_url('js/plupload.flash.swf',__FILE__),
+				'silver_xap_url' => plugins_url('js/plupload.silverlight.xap',__FILE__)
+			);
+
 		wp_localize_script( 'isell-all.js', 'isell', 
 			array('ajaxurl' => admin_url( 'admin-ajax.php'),
-				'flash_swf_url' => plugins_url('js/plupload.flash.swf',__FILE__),
-				'silver_xap_url' => plugins_url('js/plupload.silverlight.xap',__FILE__),
 				'file_upload_nonce' => wp_create_nonce('isell_file_upload'),
-				'file_delete_nonce' => wp_create_nonce('isell_file_delete')
+				'file_delete_nonce' => wp_create_nonce('isell_file_delete'),
+				'plupload' => $plupload_params,
+				'deleting_file' => __( 'Deleting...', 'isell' )
 			   ));
 
 	}
@@ -356,7 +320,8 @@ To view/edit the order, visit the following address:
 		    'has_archive' => false, 
 		    'hierarchical' => false,
 		    'menu_position' => null,
-		    'supports' => array( null )
+		    'supports' => array( null ),
+		    'menu_icon' => plugins_url( 'images/product.png', __FILE__ )
 	  	);
 	  	$order_labels = array(
 		    'name' => _x('Orders', 'post type general name'),
@@ -386,7 +351,8 @@ To view/edit the order, visit the following address:
 		    'has_archive' => false, 
 		    'hierarchical' => false,
 		    'menu_position' => null,
-		    'supports' => array( null )
+		    'supports' => array( null ),
+		    'menu_icon' => plugins_url( 'images/order.png', __FILE__ )
 	  	);
 	  	register_post_type('isell-product',$product_args);
 	  	register_post_type('isell-order',$order_args);
@@ -398,24 +364,36 @@ To view/edit the order, visit the following address:
         array($this,'product_info_metabox'),
         'isell-product'
     	);
+    	
     	add_meta_box( 
         'product_file_meta_box',
         __( 'File', 'isell' ),
         array($this,'product_file_metabox'),
         'isell-product' 
     	);
+    	
+    	add_meta_box( 
+        'product_other_info_meta_box',
+        __( 'Other Information', 'isell' ),
+        array($this,'product_other_info_metabox'),
+        'isell-product',
+        'side'
+    	);
+
     	add_meta_box( 
         'order_buyer_info',
         __( 'Buyer Info', 'isell' ),
         array($this,'order_buyer_info_metabox'),
         'isell-order' 
     	);
+    	
     	add_meta_box( 
         'order_payment_info',
         __( 'Payment Info', 'isell' ),
         array($this,'order_payment_info_metabox'),
         'isell-order' 
     	);
+    	
     	add_meta_box( 
         'order_product_info',
         __( 'Product Info', 'isell' ),
@@ -424,17 +402,53 @@ To view/edit the order, visit the following address:
         'side'
     	);
 	}
-	function product_info_metabox($post){
+	
+	function product_info_metabox($post) {
+		
 		$post_id  = $post->ID;
 		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return $post_id;
 		$currency = $this->settings['store']['currency'];
 		include_once(iSell_Path.'views/metabox_product_info.php');
+
 	}
+	
 	function product_file_metabox($post){
+
 		$post_id  = $post->ID;
 		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return $post_id;
 		include_once(iSell_Path.'views/metabox_product_file.php');
+
 	}
+	
+	function product_other_info_metabox($post) {
+
+		$post_id = $post->ID;
+		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return $post_id;
+		
+		if ( get_post_status( $post_id ) != 'publish' ) {
+
+			echo __('<p>Don\'t forget to Click on the <strong>blue Publish button</strong> above, after making changes.</p>','isell');
+			return;
+		}
+
+		$isell_options = isell_get_options();
+		$directory = $isell_options['file_management']['directory_name'];
+		$directory_path = ABSPATH . $directory;
+		$product_directory_path = $directory_path . DIRECTORY_SEPARATOR . $post_id;
+		$storage_size = get_post_meta( $post_id, 'storage_size', true );
+		$storage = get_post_meta( $post_id, 'file_storage', true );
+
+
+		if ( ! $storage_size )
+			$storage_size = isell_calc_product_storage_size( $product_directory_path );
+
+   		$storage_size = $this->formatBytes($storage_size);
+   		$storage_size = apply_filters('isell_product_storage_size', $storage_size);
+
+   		include_once( iSell_Path.'views/metabox_other_information.php' );
+
+	}
+
 	function order_product_info_metabox($post){
 		$post_id  = $post->ID;
 		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return $post_id;
@@ -494,6 +508,8 @@ To view/edit the order, visit the following address:
 		if ( !current_user_can( 'edit_post', $post_id ) )	return;
 		if ( wp_is_post_revision( $post_id ) )return;
 		if ( !isset($_POST['order_token']) )	return;
+		
+		$order_id = $post_id;
 		$first_name = $_POST['first_name'];
 		$last_name = $_POST['last_name'];
 		$email = $_POST['email'];
@@ -536,7 +552,8 @@ To view/edit the order, visit the following address:
 		$product_info['id'] = $product_id;
 		$product_info['link_status'] = $link_status;
 
-		$title = sprintf("Order: %s | ID: %s | Status: %s",get_post_meta($product_info['id'],'product_name',true),$txn_id,$payment_status);
+		$title = isell_generate_order_title( $order_id );
+		
 		//change the post title to order title
 		remove_action('save_post',array($this,'save_order_metabox_settings'));
 		
@@ -582,11 +599,9 @@ To view/edit the order, visit the following address:
 		update_post_meta($post_id,'product_name',$product_name);
 		update_post_meta($post_id,'product_file_name',$product_file_name);
 		
-		if ( is_numeric($product_price) ){
+		if ( is_numeric($product_price) )
 			update_post_meta($post_id,'product_price',$product_price);
-		}else{
-			update_post_meta($post_id,'',$product_price);
-		}
+		
 	}
 	
 	function post_edit_form_tag() {
@@ -607,11 +622,18 @@ To view/edit the order, visit the following address:
 		$order_id = (int)$_REQUEST['order'];
 		$trans_id = $_REQUEST['trans'];
 		$options = isell_get_options();
+		
 		$error_page = $options['store']['error_page'];
 		$error_page = apply_filters('isell_error_page_url', $error_page);
+		
 		$max_downloads = (int)$options['file_management']['max_downloads'];
 		$download_page = $options['store']['download_page'];
-
+		
+		if ( is_numeric( $error_page ) )
+			$error_page = get_permalink( $options['store']['error_page'] );
+		if ( is_numeric( $download_page ) )
+			$download_page = get_permalink( $options['store']['download_page'] );
+		
 		if ( !isset( $_REQUEST['do_redirect'] ) && !empty($download_page)  ){
 			wp_redirect( isell_download_page_link( $trans_id, $order_id, $download_page ) );
 			exit;
@@ -620,9 +642,12 @@ To view/edit the order, visit the following address:
 		if ( !is_int($product_id) || !is_int($order_id)  ){
 			die();
 		}
+		
 		$payment_info = get_post_meta($order_id,'payment_info',true);
 		$product_info = get_post_meta($order_id,'product_info',true);
+
 		if ( get_post_status($order_id) != 'publish' ) die();
+		
 		if ( !get_post_meta($product_id,'product_file',true) || !$payment_info || !$product_info ){
 			//invalid parameters do nothing
 			die(0);
@@ -711,6 +736,10 @@ To view/edit the order, visit the following address:
 					$notify_url = admin_url('admin-ajax.php').'?action=isell_paypal_ipn';
 					$notify_url = apply_filters('isell_notify_url', $notify_url);
 					$amount = number_format($price, 2);
+					$thanks_page = $options['store']['thanks_page'];
+					
+					if ( is_numeric( $thanks_page ) )
+						$thanks_page = get_permalink( $options['store']['thanks_page'] );
 					
 					if ( $platform == 'sandbox' )
 						$url = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
@@ -728,7 +757,7 @@ To view/edit the order, visit the following address:
 							'amount' => $amount,
 						    'item_number' => (int)$product_id,
 						    'notify_url' => $notify_url,
-						    'return' => $options['store']['thanks_page'],
+						    'return' => $thanks_page,
 						    'rm' => 2
 
 						);
@@ -786,6 +815,10 @@ To view/edit the order, visit the following address:
 		$options = isell_get_options();
 		$download_page = $options['store']['download_page'];
 		
+		if ( is_numeric( $download_page ) )
+			$download_page = get_permalink( $options['store']['download_page'] );
+		
+		
 		$product_download_url = isell_download_page_link( $txn_id, $order_id, $download_page );
 
 		if ( empty($download_page) )
@@ -806,7 +839,15 @@ To view/edit the order, visit the following address:
 		$subject = str_ireplace(array_keys($subject_replacements), $subject_replacements, $subject);
 		$message = str_ireplace(array_keys($message_replacements), $message_replacements, $message);
 
-		wp_mail($payer_email,$subject,$message);
+		$mail_sent = wp_mail($payer_email,$subject,$message);
+
+		if ( $mail_sent )
+			update_post_meta( $order_id, 'customer_product_download_email', 'yes' );
+		else
+			update_post_meta( $order_id, 'customer_product_download_email', 'no' );
+
+		return $mail_sent;
+
 	}
 	function send_admin_new_order_email($data,$order_id){
 		$email = $this->get_email('admin_new_order');
@@ -842,7 +883,14 @@ To view/edit the order, visit the following address:
 		$subject = str_ireplace(array_keys($subject_replacements), $subject_replacements, $subject);
 		$message = str_ireplace(array_keys($message_replacements), $message_replacements, $message);
 		
-		wp_mail(get_option('admin_email'),$subject,$message);
+		$mail_sent = wp_mail(get_option('admin_email'),$subject,$message);
+
+		if ( $mail_sent )
+			update_post_meta( $order_id, 'admin_new_order_email_sent', 'yes' );
+		else
+			update_post_meta( $order_id, 'admin_new_order_email_sent', 'no' );
+
+		return $mail_sent;
 	}
 	function shortcode_isell_errors($atts, $content=null){
 		 extract( shortcode_atts( array(
@@ -864,11 +912,10 @@ To view/edit the order, visit the following address:
 
 		extract( shortcode_atts( array(
       				'show' => true,
+      				'auto_start' => true,
       				'link_text' => __('click here','isell'),
       				'other_text' => __('If your download does not start automatically, ','isell')
       	 ), $atts ) );
-
-		
 
 		if ( ! isset( $_REQUEST['trans'] ) || ! isset( $_REQUEST['order'] ) ) return;
 		$txn_id = $_REQUEST['trans'];
@@ -890,11 +937,14 @@ To view/edit the order, visit the following address:
 		$error_page = $options['store']['error_page'];
 		$error_page = apply_filters('isell_error_page_url', $error_page);
 		$max_downloads = (int)$options['file_management']['max_downloads'];
+		
+		if ( is_numeric( $error_page ) )
+			$error_page = get_permalink( $options['store']['error_page'] );		
 
 		$payment_info = get_post_meta($order_id,'payment_info',true);
 		if ( ! $payment_info ) return;
 		
-		if ( !get_post_meta($product_id,'product_file',true)  ){
+		if ( ! get_post_meta($product_id,'product_file',true)  ){
 			//no file exists
 			isell_error_redirect(ISELL_NO_FILE,$error_page);
 		}
@@ -925,14 +975,23 @@ To view/edit the order, visit the following address:
 			isell_error_redirect(ISELL_DOWNLOAD_EXCEED_ERROR,$error_page);
 		}
 
+		
+		$show = apply_filters( 'isell_download_page_shortcode_property_show', $show );
+		$auto_start = apply_filters( 'isell_download_page_shortcode_property_auto_start', $auto_start );
+		$link_text = apply_filters( 'isell_download_page_shortcode_property_link_text', $link_text );
+		$other_text = apply_filters( 'isell_download_page_shortcode_property_other_text', $other_text );
 
 
 		$download_link = isell_generate_product_download_url( $order_id, $product_id, $txn_id.'&do_redirect=false' );
 		$download_link = apply_filters('isell_download_page_download_url', $download_link, $txn_id, $order_id);
 		
 		ob_start();
-
-		include(iSell_Path.'views/shortcode_download_page.php');
+		
+		$download_page_view = iSell_Path . 'views/shortcode_download_page.php';
+		
+		$download_page_view = apply_filters( 'isell_download_page_view', $download_page_view );
+		
+		include( $download_page_view );
 
 		 $return_content = ob_get_contents();
       	 ob_end_clean();
@@ -969,6 +1028,156 @@ To view/edit the order, visit the following address:
   		//for shortcode redirects
   		ob_start();
   }
+
+  function formatBytes($size, $precision = 2) {
+
+  	if ( empty( $size ) || $size === NULL || $size === 0 )
+  		return 0;
+
+    $base = log($size) / log(1024);
+    $suffixes = array('', 'kB', 'MB', 'GB', 'TB');   
+
+    return round(pow(1024, $base - floor($base)), $precision) . $suffixes[floor($base)];
+  }
+  
+  function add_custom_columns_to_isell_product( $columns ) {
+	  unset( $columns['date'] );
+	  unset( $columns['title'] );
+	  
+	  return array_merge( $columns, 
+	  			array( 
+	  					'title' => __( 'Name' ,'isell' ),
+	  					'price' => __( 'Price', 'isell' ),
+	  					'sales' => __( 'Sales', 'isell' ),
+	  					'buy_now_url' => __( 'Buy Now URL', 'isell' )
+	  				)
+	  			 ); 
+	  
+  }
+  
+  function display_column_data_for_isell_product( $column, $post_id ) {
+	  $options = isell_get_options();
+	  $currency = $options['store']['currency'];
+	  
+	  switch ( $column ) {
+		  
+		  case 'price':
+		  	
+		  	$product_price = get_post_meta( $post_id, 'product_price', true );
+		  	if ( $product_price )
+		  		printf( '<p>%s %s</p>', $product_price, $currency );
+		  	
+		  	break;
+		  	
+		 case 'sales':
+		 	
+		 	$product_sales = get_post_meta( $post_id, 'product_sales', true );
+		 	if ( $product_sales )
+		 		printf( '<p>%s</p>', $product_sales );
+		 	
+		 	break;
+		 	
+		case 'buy_now_url':
+			
+			printf( '<a class="product_buy_now_link_column" href="%s">%s</a>', isell_generate_product_url($post_id), isell_generate_product_url($post_id) );
+			
+			break;
+		 	
+	  }
+  }
+  
+  function add_custom_columns_to_isell_order( $columns ) {
+	  unset( $columns['date'] );
+	  unset( $columns['title'] );
+	  return array_merge( $columns, 
+	  			array( 
+	  					'product' => __( 'Product', 'isell' ),
+	  					'buyer_name' => __( 'Customer', 'isell' ),
+	  					'amount' => __( 'Amount Paid', 'isell' ),
+	  					'status' => __( 'Payment Status', 'isell' ),
+	  					'date' => __( 'Date', 'isell' ),
+	  					'edit' => __( 'Edit/View', 'isell' )
+	  				)
+	  			 ); 
+	  
+  }
+  
+  function display_column_data_for_isell_order( $column, $order_id ) {
+  	
+  	$options = isell_get_options();
+	$currency = $options['store']['currency'];
+
+  	$payment_info = get_post_meta ( $order_id, 'payment_info', true );
+  	
+  	switch ( $column ) {
+  		
+  		case 'product':
+  			
+  			$product_info = get_post_meta( $order_id, 'product_info', true  );
+  	
+  			if ( ! $product_info ) return;
+  	
+  			$product_id = $product_info['id'];
+  	
+  			if ( ! $product_id ) return;
+  			
+  			$product_title = get_the_title( $product_id );
+  			
+  			printf( '<p><strong>%s</strong></p>', $product_title );
+  			  			
+  			break;
+  		
+  		case 'buyer_name':
+  			
+  			$buyer_info = get_post_meta( $order_id, 'buyer_info', true );
+  			
+  			$buyer_name = $buyer_info['first_name'] . ' ' . $buyer_info['last_name'];
+ 
+   			printf( '<p class="isell_order_column_amount_buyer_name">%s</p>', $buyer_name );
+  			
+  			break;
+  		
+  		case 'amount':
+  			  			
+  			$amount = $payment_info['amount_paid'];
+  			
+  			printf( '<p class="isell_order_column_amount_paid">%s %s</p>', $amount, $currency );
+  			
+  			break;
+  		
+  		case 'status':
+  			
+  			printf( '<p class="isell_order_column_status %s">%s</p>', $payment_info['status'], $payment_info['status'] );
+  			
+  			break;
+  			
+  		case 'edit':
+  			
+  			printf( '<p class="isell_order_column_edit_link"><a href="%s">Edit This</a></p>', get_edit_post_link() );
+  			
+  			break;
+  			
+  }
+  	
+  	
+  }
+
+  
+  function add_sale_to_isell_product( $data, $order_id = NULL ) {
+	  
+	  if ( ! isset( $data['item_number'] ) ) return;
+	  
+	  $product_id = $data['item_number'];
+	  
+	  $product_sales = get_post_meta( $product_id, 'product_sales', true );
+	  $product_sales = $product_sales + 1;
+	  
+	  return update_post_meta( $product_id, 'product_sales', $product_sales );
+	  	
+  } 
+
+
+
 	
 }
 
