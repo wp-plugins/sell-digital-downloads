@@ -7,6 +7,7 @@ class iSell_File_Handler{
 	private $extension;
 	private $file;
 	private $directory_path;
+
 	function __construct($post_id=0,$file_name=NULL,$file=NULL){
 		$isell_options = isell_get_options();
 		$this->directory = $isell_options['file_management']['directory_name'];
@@ -24,11 +25,26 @@ class iSell_File_Handler{
 
 		if ( !file_exists($this->directory_path) ){
 			@mkdir($this->directory_path);
+
+			if ( ! file_exists( $this->directory_path . DIRECTORY_SEPARATOR . 'index.php' ) ) {
+
+				$index_php = fopen( $this->directory_path . DIRECTORY_SEPARATOR . 'index.php', 'w' );
+				fclose( $index_php );
+
+			}
 			//@chmod($this->directory_path,'0755');
 		}
 		if ( !file_exists($this->directory_path.DIRECTORY_SEPARATOR.$this->post_id) ){
 			@mkdir($this->directory_path.DIRECTORY_SEPARATOR.$this->post_id);
 			//@chmod($this->directory_path,'0755');
+
+			if ( ! file_exists( $this->directory_path . DIRECTORY_SEPARATOR . $this->post_id . DIRECTORY_SEPARATOR . 'index.php' ) ) {
+
+				$index_php = fopen( $this->directory_path . DIRECTORY_SEPARATOR . $this->post_id . DIRECTORY_SEPARATOR . 'index.php' , 'w' );
+				fclose( $index_php );
+
+			}
+
 		}
 		
 		$move_path = $this->directory_path.DIRECTORY_SEPARATOR.$this->post_id.DIRECTORY_SEPARATOR.$this->file_name;
@@ -166,9 +182,11 @@ class iSell_File_Handler{
 			@rename("{$filePath}.part", $filePath);
 			update_post_meta($this->post_id,'product_file',$move_path);
 			update_post_meta($this->post_id,'product_contains_file',true);
-			update_post_meta($this->post_id,'orginal_file_name',$this->file_name);
-
-			do_action('isell_file_upload_complete',$this->post_id);
+			update_post_meta($this->post_id,'original_file_name',$this->file_name);
+			update_post_meta($this->post_id,'file_storage','file-system');
+			
+			$file_name = preg_replace('/[^\w\._]+/', '_', $_POST['file_name']);
+			do_action('isell_file_upload_complete',$this->post_id, $move_path, $file_name);
 
 			return true;
 		}
@@ -184,15 +202,29 @@ class iSell_File_Handler{
 	}
 
 	function delete_file($post_id){
+		
 		do_action('isell_delete_file',$this->post_id);
 
 		$delete_path = get_post_meta($post_id,'product_file',true);
+		$file_storage = get_post_meta( $post_id, 'file_storage', true );
 
 		$result = @unlink($delete_path);
+
 		delete_post_meta($this->post_id,'product_file');
 		delete_post_meta($this->post_id,'product_contains_file');
-		delete_post_meta($this->post_id,'orginal_file_name');
-		do_action('isell_delete_file_completed',$this->post_id);
+		delete_post_meta($this->post_id,'original_file_name');
+		delete_post_meta($this->post_id,'file_storage');
+
+		if ( $result )
+			$result = 'deleted';
+		else
+			$result = 'not-deleted';
+
+		$result = apply_filters( 'isell_delete_file_result', $result, $post_id, $delete_path, $file_storage );
+
+		
+		do_action( 'isell_delete_file_completed', $post_id, $delete_path, $file_storage);
+
 		
 		return $result;
 	}

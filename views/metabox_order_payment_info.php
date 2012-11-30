@@ -16,7 +16,7 @@ if (!current_user_can('edit_post')) wp_die( __('You do not have sufficient permi
     <tr valign="top">
        <th scope="row"><strong><label for="amount_paid"><?php echo __('Amount Paid:','isell'); ?></label><strong></th>
        <td>
-          <input type="text" value="<?php echo $payment_info['amount_paid']; ?>" id="amount_paid" name="amount_paid"  /><span class="currency" style="font-weight:bold"><?php echo $currency; ?></span
+          <input type="text" value="<?php echo $payment_info['amount_paid']; ?>" id="amount_paid" name="amount_paid"  /><span class="currency" style="font-weight:bold"><?php echo $currency; ?></span>
         </td>
     </tr>
     <tr valign="top">
