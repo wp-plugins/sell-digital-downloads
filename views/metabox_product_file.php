@@ -38,4 +38,3 @@ if (!current_user_can('edit_post')) wp_die( __('You do not have sufficient permi
 <input type="hidden" value='<?php echo $post_id; ?>' name="post_id" id="isell_product_id" />
 
 </table>
-

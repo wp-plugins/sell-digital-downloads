@@ -17,3 +17,30 @@
 
 .ui-progressbar { height:2em; text-align: left; overflow: hidden; }
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
+/*jQuery licensed code ends*/
+
+#menu-posts-isell-product .wp-menu-image a img, #menu-posts-isell-order .wp-menu-image a img{
+	width: 16px;
+	height: 16px;
+}
+
+.product_buy_now_link_column{
+	font-family: monospace;
+}
+
+.isell_order_column_status{
+	text-transform: capitalize;
+	font-weight: bold;
+}
+
+.isell_order_column_status.completed, .isell_order_column_status.Completed{
+	color: green;
+}
+
+.isell_order_column_status.pending, .isell_order_column_status.Pending{
+	color: #333;
+}
+
+.isell_order_column_status.refunded, .isell_order_column_status.Refunded{
+	color: red;
+}

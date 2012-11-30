@@ -4,7 +4,7 @@ Donate link: http://wp-ecommerce.net/?p=1916
 Tags: sell digital downloads,sell digital products,sell downloads,sell download,sell products,ecommerce,e-commerce plugin,commerce,paypal,paypal ipn,orders,sell digital download,sell download paypal,sell photos,sell ebook
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 1.9
+Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,9 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 1.9 =
+* fixed a span tag in the metabox_order_payment_info.php file 
 
 = 1.8 =
 * some design improvements and new icons added for products and orders post type, new custom columns for product and order are added to products and orders screens(All Product/Orders), settings page link in admin notice fixed, pages now use ID on settings page instead of URLS

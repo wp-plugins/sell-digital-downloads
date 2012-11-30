@@ -52,7 +52,7 @@
 <td>
 	<input name="directory_name"  type="text" id="directory_name" value="<?php echo esc_html($options['file_management']['directory_name']) ?>" class="regular-text disabled" disabled  />
 	<p class="description">
-		<?php echo __('After you upload a file from product edit screen please make sure if this directory does not exist in the root folder of your site create it and also assign it only writeable and readable permissions like "0755" otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
+		<?php echo __('After you upload a file from product edit screen please make sure if this directory does not exist in the root folder of your site create it and also assign it writeable and readable permissions like "0755" otherwise you won\'t be able to attach files to products nor customers who purchase your product would be able to download the file.','isell'); ?>
 	</p>
 </td>
 </tr>
@@ -76,8 +76,8 @@
 	 <?php 
 	  $pages = get_pages(); 
 	  foreach ( $pages as $page ) {
-	  	$selected = ( $options['store']['error_page'] === get_page_link( $page->ID ) ) ? 'selected': '';
-	  	$option = '<option ' . $selected .' value="' . get_page_link( $page->ID ) . '">';
+	  	$selected = ( $options['store']['error_page'] == $page->ID  ) ? 'selected': '';
+	  	$option = '<option ' . $selected .' value="' .  $page->ID  . '">';
 		$option .= $page->post_title;
 		$option .= '</option>';
 		echo $option;
@@ -100,8 +100,8 @@
 	 <?php 
 	  $pages = get_pages(); 
 	  foreach ( $pages as $page ) {
-	  	$selected = ( $options['store']['thanks_page'] === get_page_link( $page->ID ) ) ? 'selected': '';
-	  	$option = '<option ' . $selected .' value="' . get_page_link( $page->ID ) . '">';
+	  	$selected = ( $options['store']['thanks_page'] == $page->ID  ) ? 'selected': '';
+	  	$option = '<option ' . $selected .' value="' .  $page->ID  . '">';
 		$option .= $page->post_title;
 		$option .= '</option>';
 		echo $option;
@@ -123,8 +123,8 @@
 	 <?php 
 	  $pages = get_pages(); 
 	  foreach ( $pages as $page ) {
-	  	$selected = ( $options['store']['download_page'] === get_page_link( $page->ID ) ) ? 'selected': '';
-	  	$option = '<option ' . $selected .' value="' . get_page_link( $page->ID ) . '">';
+	  	$selected = ( $options['store']['download_page'] == $page->ID ) ? 'selected': '';
+	  	$option = '<option ' . $selected .' value="' .  $page->ID  . '">';
 		$option .= $page->post_title;
 		$option .= '</option>';
 		echo $option;

@@ -149,7 +149,7 @@ function isell_settings_page(){
 
 function isell_support_forum_redirect() {
 
-	$link = 'http://muneeb.me/support/';
+	$link = 'http://wp-ecommerce.net/?p=1916';
 	wp_redirect( $link );
 
 }
@@ -234,7 +234,6 @@ function isell_download_page_link( $txn_id, $order_id, $download_page = NULL ) {
 
 }
 
-
 function isell_currencies(){
 	return array('USD' => array('title' => 'U.S. Dollar', 'code' => 'USD', 'symbol_left' => '$', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'EUR' => array('title' => 'Euro', 'code' => 'EUR', 'symbol_left' => '', 'symbol_right' => '€', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
@@ -251,7 +250,7 @@ function isell_currencies(){
                            'SGD' => array('title' => 'Singapore Dollar', 'code' => 'SGD', 'symbol_left' => '$', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'BRL' => array('title' => 'Brazilian Real', 'code' => 'BRL', 'symbol_left' => 'R$', 'symbol_right' => '', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'CNY' => array('title' => 'Chinese RMB', 'code' => 'CNY', 'symbol_left' => '￥', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
-                           'CZK' => array('title' => 'Czech Koruna', 'code' => 'CZK', 'symbol_left' => '', 'symbol_right' => 'K�?', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
+                           //'CZK' => array('title' => 'Czech Koruna', 'code' => 'CZK', 'symbol_left' => '', 'symbol_right' => '', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'DKK' => array('title' => 'Danish Krone', 'code' => 'DKK', 'symbol_left' => '', 'symbol_right' => 'kr', 'decimal_point' => ',', 'thousands_point' => '.', 'decimal_places' => '2'),
                            'HUF' => array('title' => 'Hungarian Forint', 'code' => 'HUF', 'symbol_left' => '', 'symbol_right' => 'Ft', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
                            'ILS' => array('title' => 'Israeli New Shekel', 'code' => 'ILS', 'symbol_left' => '₪', 'symbol_right' => '', 'decimal_point' => '.', 'thousands_point' => ',', 'decimal_places' => '2'),
@@ -355,8 +354,4 @@ function isell_update_order_meta( $order_id, $meta_key, $meta_value ) {
 function isell_add_order_meta( $order_id, $meta_key, $meta_value, $unique  ) {
 	return add_post_meta( $order_id, $meta_key, $meta_value, $unique );
 }
-
-
-
-
 ?>

@@ -2,13 +2,13 @@
 add_action( 'admin_enqueue_scripts', 'isell_new_feature_pointer_header' );
 function isell_new_feature_pointer_header() {
 
-   if ( ISELL_VERSION != '1.6' ) return;
+   //if ( ISELL_VERSION != '1.7' ) return;
 
     $enqueue = false;
 
     $dismissed = explode( ',', (string) get_user_meta( get_current_user_id(), 'dismissed_wp_pointers', true ) );
 
-    if ( ! in_array( 'isell_new_feature_pointer', $dismissed ) ) {
+    if ( ! in_array( 'isell_new_feature_pointer_v_1.7', $dismissed ) ) {
         $enqueue = true;
         add_action( 'admin_print_footer_scripts', 'isell_new_feature_pointer_footer_scripts' );
     }
@@ -34,7 +34,7 @@ function isell_new_feature_pointer_footer_scripts() {
         position: 'top',
         close: function() {
             $.post( ajaxurl, {
-                pointer: 'isell_new_feature_pointer',
+                pointer: 'isell_new_feature_pointer_v_1.7',
                 action: 'dismiss-wp-pointer'
             });
         }

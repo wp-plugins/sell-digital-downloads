@@ -23,10 +23,10 @@ try {
     exit(0);
 }
 if ( $verified ){
-	if ( $_POST['payment_status'] == 'Completed' ){
+	if ( $_POST['payment_status'] == 'Completed' || $_POST['payment_status'] == 'Pending' ){
 		 if ( $_POST['receiver_email'] == $options['paypal']['email'] ){
 		 	$product_id = $_POST['item_number'];
-		 	$price = get_post_meta($product_id,'product_price',true);
+		 	$price = isell_format_product_price( $product_id );
 		 	if ( !$price ) return;
 		 	if ( (float)$_POST['mc_gross'] >= (float)$price ){
 		 		if ( $_POST['mc_currency'] == $options['store']['currency'] ){
@@ -35,7 +35,39 @@ if ( $verified ){
 					$txn_id_query = $wpdb->prepare( "SELECT * 
 									 FROM  $wpdb->postmeta 
 									 WHERE  meta_value =  %s AND meta_key = %s",$txn_id,'txn_id');
-					if ( $wpdb->query($txn_id_query) >= 1 ) exit;
+					if ( $wpdb->query($txn_id_query) >= 1 ){ 
+						
+						if ( $_POST['payment_status'] == 'Completed' ) {
+
+							$get_txn_id_query = $wpdb->prepare( "SELECT post_id 
+									FROM  $wpdb->postmeta 
+									WHERE  meta_value =  %s AND meta_key = %s",$txn_id,'txn_id');
+							$order_id = $wpdb->get_var($get_txn_id_query);
+							$product_id = $wpdb->escape($_POST['item_number']);
+
+							if ( $order_id ) {
+
+								update_post_meta($order_id,'ipn_text_report',$listener->getTextReport());
+								$payment_info = get_post_meta($order_id,'payment_info',true);
+								$payment_info['status'] = 'Completed';
+								update_post_meta($order_id,'payment_info',$payment_info);
+								$product_name = get_the_title($product_id);
+								$order_title = sprintf("Order: %s | ID: %s | Status: %s",$product_name,$txn_id,$payment_info['status']);
+								$order_post = array(
+									'ID' => $order_id,
+									'post_title' => wp_strip_all_tags($order_title)
+								);
+								wp_update_post($order_post);
+
+								do_action('isell_payment_completed',$_POST, $order_id);
+
+							}
+
+						}
+
+						exit;
+					}
+
 		 			$payer_email = $_POST['payer_email'];
 		 			$payment_status = esc_html($_POST['payment_status']);
 		 			$first_name = esc_html($_POST['first_name']);
@@ -86,8 +118,10 @@ if ( $verified ){
 					}else{
 						wp_mail(get_option('admin_email'),'iSell: Error in creating an order',$listener->getTextReport());
 					}
-
-					do_action('isell_payment_completed',$_POST, $order_id);
+					if ( $_POST['payment_status'] == 'Completed' )
+						do_action('isell_payment_completed',$_POST, $order_id);
+					else
+						do_action('isell_payment_pending',$_POST, $order_id);
 
 		 		}
 		 	}
@@ -109,12 +143,18 @@ if ( $verified ){
 					$payment_info['status'] = 'Refunded';
 					update_post_meta($order_id,'payment_info',$payment_info);
 					$product_name = get_the_title($product_id);
-					$order_title = sprintf("Order: %s | ID: %s | Status: %s",$product_name,$txn_id,$payment_info['status']);
+					
+					//$order_title = sprintf("Order: %s | ID: %s | Status: %s",$product_name,$txn_id,$payment_info['status']);
+						
+					$order_title = isell_generate_order_title( $order_id );
+					
 					$order_post = array(
 							'ID' => $order_id,
 							'post_title' => wp_strip_all_tags($order_title)
 						);
 					wp_update_post($order_post);
+
+					do_action('isell_payment_refunded',$_POST, $order_id);
 
 				}
 		 	}

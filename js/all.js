@@ -6,6 +6,9 @@ if ( pagenow != undefined && pagenow == 'isell-product'){
 jQuery('#deletefile').click(function(){
         if ( jQuery('#deletefile').hasClass('disabled') )return;
         if ( !confirm('Delete this file ?') ) return;
+
+        jQuery('#deletefile').text(isell.deleting_file)
+
         jQuery.ajax({
                 type: 'POST',
                 url: isell.ajaxurl,
@@ -22,25 +25,34 @@ jQuery('#deletefile').click(function(){
         });
 });
 var isell_uploader = new plupload.Uploader({
-        runtimes: 'gears,html5,flash,silverlight,browserplus',
-        flash_swf_url: isell.flash_swf_url,
-        silverlight_xap_url: isell.silverlight_xap_url,
-        browse_button: 'pickfiles',
-        container: 'uploader',
-        chunk_size : '2mb',
-        unique_names : true,
-        multi_selection: false,
-        multipart: true,
-        url: isell.ajaxurl,
+        runtimes: isell.plupload.runtimes,
+        flash_swf_url: isell.plupload.flash_swf_url,
+        silverlight_xap_url: isell.plupload.silverlight_xap_url,
+        browse_button: isell.plupload.browse_button,
+        container: isell.plupload.container,
+        chunk_size : isell.plupload.chunk_size,
+        unique_names : isell.plupload.unique_names,
+        multi_selection: isell.plupload.multi_selection,
+        multipart: isell.plupload.multipart,
+        url: isell.plupload.url,
         multipart_params: {
                 nonce: isell.file_upload_nonce,
-                action: 'isell_file_upload',
-                post_id: jQuery('#isell_product_id').val()
+                action: isell.plupload.multipart_params_action,
+                post_id: jQuery('#isell_product_id').val(),
+                file_name: jQuery('#isell_product_file_name').val()
          }
         
     });
 
+
 isell_uploader.init();
+
+
+
+jQuery('#isell_product_file_name').change(function(){
+    isell_uploader.settings.multipart_params.file_name = jQuery('#isell_product_file_name').val();
+});
+
     
 document.getElementById('uploadfiles').onclick = function() {
     if ( jQuery('#uploadfiles').hasClass('disabled') )return;
@@ -65,7 +77,7 @@ isell_uploader.bind('FileUploaded', function(up, file, response) {
 isell_uploader.bind('UploadProgress', function(up, file) {
         jQuery( "#file_upload_progressbar" ).progressbar({
                         value: file.percent
-                });
+        });
 
 });
 
