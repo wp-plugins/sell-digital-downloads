@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
-Version: 2.1
+Version: 2.1.1
 Author URI: http://wp-ecommerce.net/
 Plugin URI: http://wp-ecommerce.net/?p=1916
 */
@@ -321,7 +321,7 @@ Class WordPress_iSell{
 		    'hierarchical' => false,
 		    'menu_position' => null,
 		    'supports' => array( null ),
-		    'menu_icon' => plugins_url( 'images/product.png', __FILE__ )
+		    'menu_icon' => plugins_url( 'images/product-18x18.png', __FILE__ )
 	  	);
 	  	$order_labels = array(
 		    'name' => _x('Orders', 'post type general name'),
@@ -352,7 +352,7 @@ Class WordPress_iSell{
 		    'hierarchical' => false,
 		    'menu_position' => null,
 		    'supports' => array( null ),
-		    'menu_icon' => plugins_url( 'images/order.png', __FILE__ )
+		    'menu_icon' => plugins_url( 'images/order-18x18.png', __FILE__ )
 	  	);
 	  	register_post_type('isell-product',$product_args);
 	  	register_post_type('isell-order',$order_args);

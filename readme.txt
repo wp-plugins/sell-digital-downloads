@@ -4,7 +4,7 @@ Donate link: http://wp-ecommerce.net/?p=1916
 Tags: sell digital downloads,sell digital products,sell downloads,sell download,sell products,ecommerce,e-commerce plugin,commerce,paypal,paypal ipn,orders,sell digital download,sell download paypal,sell photos,sell ebook
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 2.1
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,9 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 2.1.1 =
+* Plugin icons are now properly displayed in the WordPress 3.5 admin interface
 
 = 2.0 =
 * fixed a function undefined error in the plugin admin area
