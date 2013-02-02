@@ -1,5 +1,19 @@
 <?php
 
+function isell_absolute_from_url($src_file_url) {
+    // Converts $src_file_url into an absolute file path, starting at the server's root directory.
+    if (preg_match("/^http/i", $src_file_url) != 1) return FALSE;    // Not a qualified URL.
+    $domain_url = $_SERVER['SERVER_NAME'];                // Get domain name.
+    $absolute_path_root = $_SERVER['DOCUMENT_ROOT'];        // Get absolute document root path.
+    // Calculate position in $src_file_url just after the domain name...
+    $domain_name_pos = stripos($src_file_url, $domain_url);
+    if($domain_name_pos === FALSE) return FALSE;            // Rats!  URL is not on this server.
+    $domain_name_length = strlen($domain_url);
+    $total_length = $domain_name_pos+$domain_name_length;
+    // Replace http*://SERVER_NAME in $src_file_url with the absolute document root path.
+    return substr_replace($src_file_url, $absolute_path_root, 0, $total_length);
+}
+
 function isell_change_product_post_messages($messages){
 	 	global $post;
 		$messages['isell-product'] = array(
@@ -63,7 +77,7 @@ function isell_generate_product_url($product_id){
 }
 
 function isell_generate_product_download_url($order_id,$product_id,$txn_id){
-	$product_download_url = sprintf("%s?action=%s&product=%s&order=%s&trans=%s",admin_url( 'admin-ajax.php'),'isell_download_file',$product_id,$order_id,$txn_id);
+    $product_download_url = sprintf("%s?action=%s&product=%s&order=%s&trans=%s",admin_url( 'admin-ajax.php'),'isell_download_file',$product_id,$order_id,$txn_id);
 	return apply_filters ( 'isell_product_download_url' ,$product_download_url, $order_id, $product_id, $txn_id );
 }
 

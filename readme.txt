@@ -3,8 +3,8 @@ Contributors: wpecommerce
 Donate link: http://wp-ecommerce.net/?p=1916
 Tags: sell digital downloads,sell digital products,sell downloads,sell download,sell products,ecommerce,e-commerce plugin,commerce,paypal,paypal ipn,orders,sell digital download,sell download paypal,sell photos,sell ebook
 Requires at least: 3.0
-Tested up to: 3.5
-Stable tag: 2.1.1
+Tested up to: 3.5.1
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,18 +12,18 @@ All in one WordPress plugin for selling digital downloads. It allows you to sell
 
 == Description ==
 
-Lots of WordPress E-commerce plugins are trying to integrate the digital products selling system into their plugins but that does not work quite well when you try to mix the selling of both physical and digital items together. The setup can get messy and confusing. From my own personal frustrations with those plugins I had decided to create my own plugin for just single purpose, i.e sell and sell only digital products. Also I don't want any kind of bloat in the plugin, so this plugin is not an elephant plugin. If you want to sell digital downloads via PayPal, this plugin will do the job nicely.
+Lots of WordPress E-commerce plugins are trying to integrate the digital products selling system into their plugins but that does not work quite well when you try to sell both physical and digital products together. The setup can get messy and confusing. From my own personal frustration with those plugins I had decided to create a plugin just for one purpose, i.e sell and sell only digital products. Also I don't want any kind of bloat in the plugin, so this plugin is not an elephant plugin. If you want to sell digital downloads via PayPal, this plugin will do the job nicely.
 
-WordPress iSell is a simple WordPress plugin to sell digital downloads. It integrates flawlessly with Paypal. User interface (UI) of the plugin is very easy to use, I call this plugin for users, not for developers but developers should not feel left behind. I know how painful it is to modify client's plugins and then know after few weeks or months that they had updated the plugin and boom all changes are lost. There are filters and hooks for almost every important thing in WP iSell. There is also pluggable functions support for some advanced purposes.
+WordPress iSell is a simple WordPress plugin to sell digital downloads. It integrates flawlessly with PayPal. User interface (UI) of the plugin is very simple to use, I call this plugin for users, not for developers but developers should not feel left behind. I know how painful it is to modify client's plugins and then find out after a few weeks or months that they had updated the plugin and boom! all changes are lost. There are filters and hooks for almost every important functionality in WP iSell.
 
 = Sell Digital Downloads Features =
 
-* You can upload very large files for products, even if your host have 2MB file upload limit. Uploading large files would also not bog down your server
-* You can sell various types of downloads. For example: ebooks, photos, music, videos, mp3 etc.
-* Digital downloads are automatically sent to your customer via email after PayPal payment.
+* You can upload files easily via WordPress media uploader or your own FTP software
+* You can sell various types of downloads. For example: ebooks, photos, music, videos, mp3 etc
+* Digital downloads are automatically sent to your customer via email after PayPal payment
 * You can create unlimited products
 * You can also create custom orders
-* You can manage products and orders through standard WordPress UI. It feels as if you are managing your WordPress posts/pages. This plugin utilizes Wordrpess's custom post type feature.
+* You can manage products and orders through standard WordPress UI. It feels as if you are managing your WordPress posts/pages. This plugin utilizes the custom post type feature of WordPress.
 * It works flawlessly with the latest version of WordPress.
 * It's a developer friendly plugin. It can be extended by using the proper hooks and filters.
 * Your digital downloads are served to your customer as encrypted links. It's not just full links to your files.
@@ -53,6 +53,10 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 2.1.2 =
+* Digital files can now be uploaded via media uploader from "Products->Add New" interface
+* Another alternative method has been added to resolve file download issues across different servers.
 
 = 2.1.1 =
 * Plugin icons are now properly displayed in the WordPress 3.5 admin interface

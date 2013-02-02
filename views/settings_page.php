@@ -46,7 +46,7 @@
 	
 </td>
 </tr>
-
+<!--
 <tr valign="top">
 <th scope="row"><label for="directory_name"><?php echo __('Directory','isell'); ?></label></th>
 <td>
@@ -56,7 +56,7 @@
 	</p>
 </td>
 </tr>
-
+-->
 <tr valign="top">
 <th scope="row"><label for="max_downloads"><?php echo __('Max Downloads','isell'); ?></label></th>
 <td>

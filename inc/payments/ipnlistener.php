@@ -147,7 +147,8 @@ class IpnListener {
             throw new Exception("fsockopen error: [$errno] $errstr");
         } 
 
-        $header = "POST /cgi-bin/webscr HTTP/1.0\r\n";
+        $header = "POST /cgi-bin/webscr HTTP/1.1\r\n";
+        $header .= "Host: ".$this->getPaypalHost()."\r\n";
         $header .= "Content-Type: application/x-www-form-urlencoded\r\n";
         $header .= "Content-Length: ".strlen($encoded_data)."\r\n";
         $header .= "Connection: Close\r\n\r\n";
@@ -284,9 +285,9 @@ class IpnListener {
             throw new Exception("Invalid response status: ".$this->response_status);
         }
         
-        if (strpos($this->response, "VERIFIED") !== false) {
+        if (stripos($this->response, "VERIFIED") !== false) {
             return true;
-        } elseif (strpos($this->response, "INVALID") !== false) {
+        } elseif (stripos($this->response, "INVALID") !== false) {
             return false;
         } else {
             throw new Exception("Unexpected response from PayPal.");

@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
-Version: 2.1.1
+Version: 2.1.2
 Author URI: http://wp-ecommerce.net/
 Plugin URI: http://wp-ecommerce.net/?p=1916
 */
@@ -43,7 +43,7 @@ Class WordPress_iSell{
 	function actions(){
 		//load scripts only on admin dashboard
 		add_action('admin_enqueue_scripts',array($this,'admin_enqueue'));
-
+        add_action('admin_print_styles', array($this,'admin_styles'));
 		//init actions
 		add_action('init',array($this,'product_post_type'));
 
@@ -118,7 +118,7 @@ Class WordPress_iSell{
 	}
 	function constants(){
 		//isell version
-		define('ISELL_VERSION','1.8');
+		define('ISELL_VERSION','2.1.2');
 
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
@@ -253,6 +253,11 @@ Class WordPress_iSell{
 	}
 	function admin_enqueue($page){
 
+        //media uploader specific scripts
+        wp_enqueue_script('media-upload');
+        wp_enqueue_script('thickbox');
+        wp_register_script('wpisellmedia-upload', plugins_url('js/wpisell_media_handler.js',__FILE__), array('jquery','media-upload','thickbox'));
+        wp_enqueue_script('wpisellmedia-upload');
 		//these scripts are only added to the admin screen
 		wp_enqueue_style( 'isell-all.css', plugins_url('css/all.css',__FILE__), array(), ISELL_VERSION );
 		wp_enqueue_style( 'wp-jquery-ui-dialog' );
@@ -291,6 +296,9 @@ Class WordPress_iSell{
 			   ));
 
 	}
+    function admin_styles(){
+        wp_enqueue_style('thickbox');
+    }
 	function product_post_type(){
 		$product_labels = array(
 		    'name' => _x('Products', 'post type general name'),
@@ -357,6 +365,7 @@ Class WordPress_iSell{
 	  	register_post_type('isell-product',$product_args);
 	  	register_post_type('isell-order',$order_args);
 	}
+
 	function add_meta_boxes(){
 		add_meta_box( 
         'product_info_meta_box',
@@ -465,7 +474,8 @@ Class WordPress_iSell{
 				);
 		}else{
 			$product_info['name'] = get_post_meta($product_info['id'],'product_name',true);
-			$download_url = sprintf("%s?action=%s&product=%s&order=%s&trans=%s",admin_url( 'admin-ajax.php'),'isell_download_file',$product_info['id'],$post_id,$payment_info['txn_id']);
+			//$download_url = sprintf("%s?action=%s&product=%s&order=%s&trans=%s",admin_url( 'admin-ajax.php'),'isell_download_file',$product_info['id'],$post_id,$payment_info['txn_id']);
+            $download_url = isell_generate_product_download_url($post_id, $product_info['id'], $payment_info['txn_id']);
 			$product_info['download_url'] = $download_url;
 		}
 		include_once(iSell_Path.'views/metabox_order_product_info.php');
@@ -579,6 +589,13 @@ Class WordPress_iSell{
 		$product_name = stripslashes($_POST['product_name']);
 		$product_price = stripslashes($_POST['product_price']);
 		$product_file_name = stripslashes($_POST['product_file_name']);
+        $product_file_url = stripslashes($_POST['product_file_url']);
+        $simpledloption = "no";
+        if(isset($_POST["isell_simple_download_checkbox"])){
+            if($_POST["isell_simple_download_checkbox"]=="yes"){
+                $simpledloption = "yes";
+            }
+        }
 		//change the post title to product name
 		remove_action('save_post',array($this,'save_product_metabox_settings'));
 		
@@ -598,6 +615,8 @@ Class WordPress_iSell{
 		
 		update_post_meta($post_id,'product_name',$product_name);
 		update_post_meta($post_id,'product_file_name',$product_file_name);
+        update_post_meta($post_id,'product_file_url',$product_file_url);
+        update_post_meta($post_id,'isell_simple_download_checkbox',$simpledloption);
 		
 		if ( is_numeric($product_price) )
 			update_post_meta($post_id,'product_price',$product_price);
@@ -610,14 +629,9 @@ Class WordPress_iSell{
 	
 	function product_download_file(){
 		do_action('isell_product_download');
-		
 		if ( !isset($_REQUEST['product']) || !isset($_REQUEST['order']) || !isset($_REQUEST['trans'])  ){
 			die();
 		}
-	 	
-
-
-
 		$product_id = (int)$_REQUEST['product'];
 		$order_id = (int)$_REQUEST['order'];
 		$trans_id = $_REQUEST['trans'];
@@ -633,11 +647,12 @@ Class WordPress_iSell{
 			$error_page = get_permalink( $options['store']['error_page'] );
 		if ( is_numeric( $download_page ) )
 			$download_page = get_permalink( $options['store']['download_page'] );
-		
-		if ( !isset( $_REQUEST['do_redirect'] ) && !empty($download_page)  ){
-			wp_redirect( isell_download_page_link( $trans_id, $order_id, $download_page ) );
-			exit;
-		}
+
+
+        if ( !isset( $_REQUEST['do_redirect'] ) && !empty($download_page)  ){
+            wp_redirect( isell_download_page_link( $trans_id, $order_id, $download_page ) );
+            exit;
+        }
 
 		if ( !is_int($product_id) || !is_int($order_id)  ){
 			die();
@@ -647,12 +662,17 @@ Class WordPress_iSell{
 		$product_info = get_post_meta($order_id,'product_info',true);
 
 		if ( get_post_status($order_id) != 'publish' ) die();
-		
+
+        /*
 		if ( !get_post_meta($product_id,'product_file',true) || !$payment_info || !$product_info ){
 			//invalid parameters do nothing
 			die(0);
 		}
-		
+		*/
+        if ( !get_post_meta($product_id,'product_file_url',true) || !$payment_info || !$product_info ){
+            //invalid parameters do nothing
+            die(0);
+        }
 		if ( $payment_info['txn_id'] != $trans_id  ){
 			//invalid transaction id
 			isell_error_redirect(ISELL_INVALID_TXN_ID,$error_page);
@@ -673,51 +693,66 @@ Class WordPress_iSell{
 			//downloads exceeds the max number of downloads allowed in settings
 			isell_error_redirect(ISELL_DOWNLOAD_EXCEED_ERROR,$error_page);
 		}
-		
+        $simple_download = false;
+        $dloption = get_post_meta($product_id,'isell_simple_download_checkbox',true);
+        if(!empty($dloption)){
+            if($dloption=="yes"){
+                $simple_download = true;
+            }
+        }
 		$file_name = get_post_meta($product_id,'product_file_name',true);
-		$file = get_post_meta($product_id,'product_file',true);
+		//$file = get_post_meta($product_id,'product_file',true);
+        $file = get_post_meta($product_id,'product_file_url',true);
+        if(!$simple_download){
+            $file = isell_absolute_from_url($file);
+        }
+
 		if ( !$file_name ){
 			$file_name = $file;
 		}
-
 		do_action('isell_product_download_validation_complete',$order_id,$product_id);
-		
+        //testing
+        if($simple_download){
+            $product_info['downloads'] += 1;
+            update_post_meta($order_id,'product_info',$product_info);
+            wp_redirect($file);
+            exit;
+        }
 		if (file_exists($file)) {
-			
 			ob_start();
 			$product_info['downloads'] += 1;
 			update_post_meta($order_id,'product_info',$product_info);
-			if ( function_exists('apache_get_modules') 
-      && in_array('mod_xsendfile', apache_get_modules()) ){
-				header ('X-Sendfile: ' . $file);
-			    header('Content-Description: File Transfer');
-			    header('Content-Type: application/octet-stream');
-			    header('Content-Disposition: attachment; filename='.basename($file_name));
-			    header('Content-Transfer-Encoding: binary');
-			    header('Expires: 0');
-			    header('Cache-Control: must-revalidate');
-			    header('Pragma: public');
-			    header('Content-Length: ' . filesize($file));
-			}else{
-				set_time_limit(0);
-				header('Content-Description: File Transfer');
-			    header('Content-Type: application/octet-stream');
-			    header('Content-Disposition: attachment; filename='.basename($file_name));
-			    header('Content-Transfer-Encoding: binary');
-			    header('Expires: 0');
-			    header('Cache-Control: must-revalidate');
-			    header('Pragma: public');
-			    header('Content-Length: ' . filesize($file));
-			    ob_clean();
-			    flush();
-			    $this->readfile_chunked($file);
-			}
+            if ( function_exists('apache_get_modules') && in_array('mod_xsendfile', apache_get_modules()) ){
+                header ('X-Sendfile: ' . $file);
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename='.basename($file_name));
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($file));
+            }else{
+                set_time_limit(0);
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename='.basename($file_name));
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($file));
+                ob_clean();
+                flush();
+                $this->readfile_chunked($file);
+            }
 			do_action('isell_product_download_complete',$order_id);
 		    exit;
 		}
 		isell_error_redirect(ISELL_NO_FILE,$error_page);
 		die();
 	}
+
 	function process_paypal_ipn(){
 		include(iSell_Path.'inc/payments/ipnlistener.php');
 		include(iSell_Path.'inc/payments/process_paypal_ipn.php');
@@ -943,12 +978,16 @@ Class WordPress_iSell{
 
 		$payment_info = get_post_meta($order_id,'payment_info',true);
 		if ( ! $payment_info ) return;
-		
+		/*
 		if ( ! get_post_meta($product_id,'product_file',true)  ){
 			//no file exists
 			isell_error_redirect(ISELL_NO_FILE,$error_page);
 		}
-
+        */
+        if (!get_post_meta($product_id,'product_file_url',true)  ){
+            //no file exists
+            isell_error_redirect(ISELL_NO_FILE,$error_page);
+        }
 		if ( $payment_info['txn_id'] != $txn_id  ){
 			//invalid transaction id
 			isell_error_redirect(ISELL_INVALID_TXN_ID,$error_page);
@@ -986,7 +1025,7 @@ Class WordPress_iSell{
 		$download_link = apply_filters('isell_download_page_download_url', $download_link, $txn_id, $order_id);
 		
 		ob_start();
-		
+
 		$download_page_view = iSell_Path . 'views/shortcode_download_page.php';
 		
 		$download_page_view = apply_filters( 'isell_download_page_view', $download_page_view );
