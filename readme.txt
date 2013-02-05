@@ -54,6 +54,9 @@ For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ec
 
 == Changelog ==
 
+= 2.1.3 =
+* Media Uploader no longer breaks when you insert images to your WordPress post/page
+
 = 2.1.2 =
 * Digital files can now be uploaded via media uploader from "Products->Add New" interface
 * Another alternative method has been added to resolve file download issues across different servers.

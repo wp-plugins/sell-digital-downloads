@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
-Version: 2.1.2
+Version: 2.1.3
 Author URI: http://wp-ecommerce.net/
 Plugin URI: http://wp-ecommerce.net/?p=1916
 */
@@ -118,7 +118,7 @@ Class WordPress_iSell{
 	}
 	function constants(){
 		//isell version
-		define('ISELL_VERSION','2.1.2');
+		define('ISELL_VERSION','2.1.3');
 
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
@@ -254,14 +254,17 @@ Class WordPress_iSell{
 	function admin_enqueue($page){
 
         //media uploader specific scripts
+        global $post;
+        if($post->post_type=="isell-product"){
         wp_enqueue_script('media-upload');
         wp_enqueue_script('thickbox');
         wp_register_script('wpisellmedia-upload', plugins_url('js/wpisell_media_handler.js',__FILE__), array('jquery','media-upload','thickbox'));
         wp_enqueue_script('wpisellmedia-upload');
+        }
 		//these scripts are only added to the admin screen
 		wp_enqueue_style( 'isell-all.css', plugins_url('css/all.css',__FILE__), array(), ISELL_VERSION );
-		wp_enqueue_style( 'wp-jquery-ui-dialog' );
-		
+		//wp_enqueue_style( 'wp-jquery-ui-dialog' );
+		/*
 		global $wp_version;
 		if ( version_compare($wp_version,"3.3","<") ){
 			wp_enqueue_script('jquery-ui-widget');
@@ -269,10 +272,10 @@ Class WordPress_iSell{
 		}else{
 			wp_enqueue_script('jquery-ui-progressbar');
 		}
-		
-		wp_enqueue_script( 'plupload.js', plugins_url('js/plupload-full.js',__FILE__), array('jquery'), false, true );
-		wp_enqueue_script( 'isell-all.js', plugins_url('js/all.js',__FILE__), array('jquery'), ISELL_VERSION , true);
-
+		*/
+		//wp_enqueue_script( 'plupload.js', plugins_url('js/plupload-full.js',__FILE__), array('jquery'), false, true );
+		//wp_enqueue_script( 'isell-all.js', plugins_url('js/all.js',__FILE__), array('jquery'), ISELL_VERSION , true);
+        /*
 		$plupload_params = array(
 				'runtimes' => apply_filters('isell_plupload_runtime','gears,html5,flash,silverlight,browserplus'),
 				'browse_button' => apply_filters('isell_plupload_browse_button','pickfiles'),
@@ -294,10 +297,13 @@ Class WordPress_iSell{
 				'plupload' => $plupload_params,
 				'deleting_file' => __( 'Deleting...', 'isell' )
 			   ));
-
+        */
 	}
     function admin_styles(){
+        global $post;
+        if($post->post_type=="isell-product"){
         wp_enqueue_style('thickbox');
+        }
     }
 	function product_post_type(){
 		$product_labels = array(
