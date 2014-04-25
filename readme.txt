@@ -3,8 +3,8 @@ Contributors: wpecommerce
 Donate link: http://wp-ecommerce.net/?p=1916
 Tags: sell digital downloads,sell digital products,sell downloads,sell download,sell products,ecommerce,e-commerce plugin,commerce,paypal,paypal ipn,orders,sell digital download,sell download paypal,sell photos,sell ebook
 Requires at least: 3.0
-Tested up to: 3.8
-Stable tag: 2.1.6
+Tested up to: 3.9
+Stable tag: 2.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,9 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 2.1.7 =
+* Plugin is now compatible with WordPress 3.9
 
 = 2.1.6 =
 * Plugin now works with WordPress 3.8
