@@ -184,6 +184,7 @@ if ( !function_exists('isell_save_settings') ){
 	 		);
 		$options['file_management']['max_downloads'] = (int)$_POST['max_downloads'];
 		$options['advanced']['use_fsockopen_or_curl'] = $_POST['use_fsockopen_or_curl'];
+                $options['advanced']['wp_isell_enable_debug'] = $_POST["wp_isell_enable_debug"]=='1'?1:'';
 		update_option('isell_options',$options);
 		return $options;
 	}
@@ -193,12 +194,22 @@ if ( !function_exists('isell_settings_page_view') ){
 		$options = get_option('isell_options');
 		$currencies = isell_currencies();
 		$show_settings_updated_notice = false;
-
+                $debug_reset_notice = '';
 		if ( isset($_POST['submit']) && isset($_POST['isell_options_page']) ){
 			if ( !wp_verify_nonce($_POST['nonce'],'isell_options_page') ) return;
 			$options = isell_save_settings($options);
 			$show_settings_updated_notice = true;
 		}
+                if(isset($_POST['wp_isell_reset_logfile'])){
+                    // Reset the debug log file
+                    if(wp_isell_reset_logfile()){
+                        $debug_reset_notice = '1';
+                    }
+                    else{
+                        $debug_reset_notice = '0';
+                    }
+                    $show_settings_updated_notice = false;
+                }
 		
 		include_once(iSell_Path.'/views/settings_page.php');
 	}

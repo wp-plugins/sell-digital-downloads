@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
-Version: 2.1.7
+Version: 2.1.8
 Author URI: http://wp-ecommerce.net/
 Plugin URI: http://wp-ecommerce.net/?p=1916
 */
@@ -35,7 +35,7 @@ Class WordPress_iSell{
 
 		include(iSell_Path . 'inc/file_handler.php');
 		include(iSell_Path . 'inc/functions.php');
-
+                include_once('isell_debug.php');
 		//shows isell new feature pointer/tooltip which will be used to highlight new features
 		//include(iSell_Path . 'inc/new_feature_pointer.php');
 
@@ -118,8 +118,8 @@ Class WordPress_iSell{
 	}
 	function constants(){
 		//isell version
-		define('ISELL_VERSION','2.1.7');
-
+		define('ISELL_VERSION','2.1.8');
+                define('ISELL_PLUGIN_URL', plugins_url('',__FILE__));
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
 		define('ISELL_PAYMENT_NOT_COMPLETED',2);
@@ -879,14 +879,17 @@ Class WordPress_iSell{
 
 		$subject = str_ireplace(array_keys($subject_replacements), $subject_replacements, $subject);
 		$message = str_ireplace(array_keys($message_replacements), $message_replacements, $message);
-
+                wp_isell_write_debug('Sending product download email to customer: '.$payer_email, true);
 		$mail_sent = wp_mail($payer_email,$subject,$message);
 
-		if ( $mail_sent )
+		if ( $mail_sent ){
+                        wp_isell_write_debug('Product download email sent successfully', true);
 			update_post_meta( $order_id, 'customer_product_download_email', 'yes' );
-		else
+                }
+		else{
+                        wp_isell_write_debug('Product download email could not be sent', false);
 			update_post_meta( $order_id, 'customer_product_download_email', 'no' );
-
+                }        
 		return $mail_sent;
 
 	}
@@ -923,14 +926,20 @@ Class WordPress_iSell{
 
 		$subject = str_ireplace(array_keys($subject_replacements), $subject_replacements, $subject);
 		$message = str_ireplace(array_keys($message_replacements), $message_replacements, $message);
-		
-		$mail_sent = wp_mail(get_option('admin_email'),$subject,$message);
+                $admin_email = get_option('admin_email');
+		wp_isell_write_debug('Sending sale notification email to admin: '.$admin_email, true);
+		$mail_sent = wp_mail($admin_email,$subject,$message);
 
 		if ( $mail_sent )
-			update_post_meta( $order_id, 'admin_new_order_email_sent', 'yes' );
+                {   
+                    wp_isell_write_debug('Sale notification email sent successfully', true);
+                    update_post_meta( $order_id, 'admin_new_order_email_sent', 'yes' );
+                }
 		else
-			update_post_meta( $order_id, 'admin_new_order_email_sent', 'no' );
-
+                {
+                    wp_isell_write_debug('Sale notification email could not be sent', false);
+                    update_post_meta( $order_id, 'admin_new_order_email_sent', 'no' );
+                }
 		return $mail_sent;
 	}
 	function shortcode_isell_errors($atts, $content=null){
@@ -1216,15 +1225,13 @@ Class WordPress_iSell{
 	  
 	  $product_sales = get_post_meta( $product_id, 'product_sales', true );
 	  $product_sales = $product_sales + 1;
-	  
+	  wp_isell_write_debug('Updating sale count for product ID: '.$product_id, true);
 	  return update_post_meta( $product_id, 'product_sales', $product_sales );
 	  	
   } 
-
-
-
 	
 }
 
 new WordPress_iSell;
+
 ?>

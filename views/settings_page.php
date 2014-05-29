@@ -1,6 +1,17 @@
 <div class="wrap">
 <div id="icon-options-general" class="icon32"><br></div><h2><?php echo __('Settings','isell'); ?></h2>
 
+<?php if($debug_reset_notice != ''){
+        if($debug_reset_notice == '1'){ ?>
+            <div id="message" class="updated fade"><p><strong><?php echo __('Debug log file has been reset!'); ?></strong></p></div>
+            <?php
+        }
+        else{ ?>
+            <div id="message" class="updated fade"><p><strong><?php echo __('Debug log file could not be reset!'); ?></strong></p></div>
+            <?php
+        }
+} ?>
+
 <?php if ( $show_settings_updated_notice ): ?>
 	<div id="message" class="updated below-h2" style="margin:5px">
 		<p><?php echo __('Settings updated.'); ?></p>
@@ -150,6 +161,18 @@
 	</p>
 </td>
 </tr>
+
+<tr valign="top">
+<th scope="row"><label for="wp_isell_enable_debug"><?php echo __('Enable Debug','isell'); ?></label></th>
+<td>
+<input name="wp_isell_enable_debug" type="checkbox"<?php if($options['advanced']['wp_isell_enable_debug']!='') echo ' checked="checked"'; ?> value="1"/>
+<p class="description">If checked, debug output will be written to log files. This is useful for troubleshooting post payment failures (for example, if you are not receiving the email after payment).</p>
+<p class="description">You can check the debug log file by clicking on the link below (The log file can be viewed using any text editor):</p>
+<ul>
+    <li><a href="<?php echo ISELL_PLUGIN_URL.'/wp_isell_debug.log'; ?>" target="_blank">wp_isell_debug.log</a></li>
+</ul>
+<div class="submit"><input type="submit" name="wp_isell_reset_logfile" style="font-weight:bold; color:red" value="Reset Debug Log file"/> WP iSell log file is "reset" and timestamped with a log file reset message.</div>
+</td></tr>
 
 </tbody>
 </table>

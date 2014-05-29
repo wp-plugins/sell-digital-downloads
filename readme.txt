@@ -1,10 +1,10 @@
 === Sell Digital Downloads ===
 Contributors: wpecommerce
 Donate link: http://wp-ecommerce.net/?p=1916
-Tags: sell digital downloads,sell digital products,sell downloads,sell download,sell products,ecommerce,e-commerce plugin,commerce,paypal,paypal ipn,orders,sell digital download,sell download paypal,sell photos,sell ebook
+Tags: sell digital products,sell downloads,sell download,sell products,ecommerce,commerce,paypal,paypal ipn,orders,sell photos,sell ebook,selling,e-downloads,e-store,eshop,download,downloads,digital downloads,e-commerce,wp ecommerce,sell videos
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 2.1.7
+Stable tag: 2.1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ WordPress iSell is a simple WordPress plugin to sell digital downloads. It integ
 = Sell Digital Downloads Features =
 
 * You can upload files easily via WordPress media uploader or your own FTP software
-* You can sell various types of downloads. For example: ebooks, photos, music, videos, mp3 etc
+* You can sell various types of downloads. For example: pdf, ebook, photo, music, video, audio, mp3 etc
 * Digital downloads are automatically sent to your customer via email after PayPal payment
 * You can create unlimited products
 * You can also create custom orders
@@ -27,6 +27,7 @@ WordPress iSell is a simple WordPress plugin to sell digital downloads. It integ
 * It works flawlessly with the latest version of WordPress.
 * It's a developer friendly plugin. It can be extended by using the proper hooks and filters.
 * Your digital downloads are served to your customer as encrypted links. It's not just full links to your files.
+* Easy File download using PayPal
 
 For detailed documentation please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
@@ -53,6 +54,9 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 2.1.8 =
+* Added debug functionality. This will be very useful if orders are not being updated or users are not getting emails
 
 = 2.1.7 =
 * Plugin is now compatible with WordPress 3.9

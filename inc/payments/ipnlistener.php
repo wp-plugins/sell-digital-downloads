@@ -114,6 +114,7 @@ class IpnListener {
         if ($this->response === false || $this->response_status == '0') {
             $errno = curl_errno($ch);
             $errstr = curl_error($ch);
+            wp_isell_write_debug("cURL error: [".$errno."] ".$errstr, false);
             throw new Exception("cURL error: [$errno] $errstr");
         }
     }
@@ -144,6 +145,7 @@ class IpnListener {
         
         if (!$fp) { 
             // fsockopen error
+            wp_isell_write_debug("fsockopen error: [".$errno."] ".$errstr, false);
             throw new Exception("fsockopen error: [$errno] $errstr");
         } 
 
@@ -166,6 +168,7 @@ class IpnListener {
         } 
         
         fclose($fp);
+        wp_isell_write_debug('Connection to '.$this->getPaypalHost().' successfuly completed.',true);
     }
     
     private function getPaypalHost() {
@@ -260,36 +263,48 @@ class IpnListener {
     public function processIpn($post_data=null) {
 
         $encoded_data = 'cmd=_notify-validate';
-        
+        wp_isell_write_debug('Received IPN from PayPal',true);
         if ($post_data === null) { 
             // use raw POST data 
             if (!empty($_POST)) {
                 $this->post_data = $_POST;
+                wp_isell_write_debug_array($this->post_data, true);
                 $encoded_data .= '&'.file_get_contents('php://input');
             } else {
+                wp_isell_write_debug('No POST data found', false);
                 throw new Exception("No POST data found.");
             }
         } else { 
             // use provided data array
             $this->post_data = $post_data;
-            
+            wp_isell_write_debug_array($this->post_data, true);
             foreach ($this->post_data as $key => $value) {
                 $encoded_data .= "&$key=".urlencode($value);
             }
         }
-
-        if ($this->use_curl) $this->curlPost($encoded_data); 
-        else $this->fsockPost($encoded_data);
+        
+        if($this->use_curl){
+            wp_isell_write_debug('Verifying IPN using CURL',true);
+            $this->curlPost($encoded_data); 
+        }
+        else{
+            wp_isell_write_debug('Verifying IPN using fsockopen',true);
+            $this->fsockPost($encoded_data);
+        }
         
         if (strpos($this->response_status, '200') === false) {
+            wp_isell_write_debug('Invalid response status: '.$this->response_status, false);
             throw new Exception("Invalid response status: ".$this->response_status);
         }
         
         if (stripos($this->response, "VERIFIED") !== false) {
+            wp_isell_write_debug('IPN successfully verified', true);
             return true;
         } elseif (stripos($this->response, "INVALID") !== false) {
+            wp_isell_write_debug('IPN validation failed', false);
             return false;
         } else {
+            wp_isell_write_debug('Unexpected response from PayPal', false);
             throw new Exception("Unexpected response from PayPal.");
         }
     }
