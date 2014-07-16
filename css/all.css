@@ -44,3 +44,7 @@
 .isell_order_column_status.refunded, .isell_order_column_status.Refunded{
 	color: red;
 }
+/* no need to limit the size of the product thumbnail column
+.column-thumbnail{
+	width: 70px;
+}*/

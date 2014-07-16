@@ -4,7 +4,7 @@ Donate link: http://wp-ecommerce.net/?p=1916
 Tags: sell digital products,sell downloads,sell download,sell products,ecommerce,commerce,paypal,paypal ipn,orders,sell photos,sell ebook,selling,e-downloads,e-store,eshop,download,downloads,digital downloads,e-commerce,wp ecommerce,sell videos
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 2.1.8
+Stable tag: 2.1.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,8 @@ WordPress iSell is a simple WordPress plugin to sell digital downloads. It integ
 * It's a developer friendly plugin. It can be extended by using the proper hooks and filters.
 * Your digital downloads are served to your customer as encrypted links. It's not just full links to your files.
 * Easy File download using PayPal
+* Upload thumbnails for your downloads
+* Create a product display box using a shortcode
 
 For detailed documentation please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
@@ -54,6 +56,10 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](http://wp-ecommerce.net/?p=1916) plugin page
 
 == Changelog ==
+
+= 2.1.9 =
+* Ability to upload a thumbnail for each product
+* Show a [product display box](http://wp-ecommerce.net/create-product-download-box-in-wordpress-2613) using a shortcode
 
 = 2.1.8 =
 * Added debug functionality. This will be very useful if orders are not being updated or users are not getting emails

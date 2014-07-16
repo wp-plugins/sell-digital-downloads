@@ -19,6 +19,14 @@ if (!current_user_can('edit_post')) wp_die( __('You do not have sufficient permi
        		<p class="description"><?php echo __('Enter only a numeric value','isell'); ?></p>
         </td>
     </tr>
+		<tr valign="top">
+        <th scope="row"><strong><label for="product_thumbnail_url"><?php echo __('Thumbnail:','isell'); ?></label><strong></th>
+        <td>
+            <input type="text" value="<?php echo get_post_meta($post_id,'product_thumbnail_url',true); ?>" id="product_thumbnail_url" name="product_thumbnail_url" size="90" />
+            <input id="product_thumbnail_upload_button" type="button" value="<?php echo __('Upload File','isell'); ?>" />
+            <p class="description"><?php echo __('Enter the URL of your file or upload one','isell'); ?></p>
+        </td>
+    </tr>
     <tr valign="top">
        <th scope="row"><strong><label for="product_url" id="product_url_label"><?php echo __('Buy Now Url:','isell'); ?></label><strong></th>
        <td>

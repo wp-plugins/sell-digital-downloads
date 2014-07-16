@@ -3,7 +3,7 @@
 Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
-Version: 2.1.8
+Version: 2.1.9
 Author URI: http://wp-ecommerce.net/
 Plugin URI: http://wp-ecommerce.net/?p=1916
 */
@@ -46,7 +46,9 @@ Class WordPress_iSell{
         add_action('admin_print_styles', array($this,'admin_styles'));
 		//init actions
 		add_action('init',array($this,'product_post_type'));
-
+                
+                add_action('wp_enqueue_scripts', array($this, 'isell_enqueue_scripts'));
+                
 		//add meta boxes
 		add_action('add_meta_boxes',array($this,'add_meta_boxes'));
 
@@ -82,6 +84,9 @@ Class WordPress_iSell{
 
 		//isell download page shortcode
 		add_shortcode('isell_download_page',array($this,'shortcode_isell_download_page'));
+                
+                //isell download page shortcode
+		add_shortcode('wp_isell_download',array($this,'wp_isell_download_display'));
 
 		//to make shortcode redirects work using ob_start at the start of init
 		add_action( 'init', array( $this, 'init_ob_start' ) );
@@ -118,7 +123,7 @@ Class WordPress_iSell{
 	}
 	function constants(){
 		//isell version
-		define('ISELL_VERSION','2.1.8');
+		define('ISELL_VERSION','2.1.9');
                 define('ISELL_PLUGIN_URL', plugins_url('',__FILE__));
 		//error_codes
 		define('ISELL_INVALID_TXN_ID',1);
@@ -253,14 +258,14 @@ Class WordPress_iSell{
 	}
 	function admin_enqueue($page){
 
-        //media uploader specific scripts
-        global $post;
-        if($post->post_type=="isell-product"){
-        wp_enqueue_script('media-upload');
-        wp_enqueue_script('thickbox');
-        wp_register_script('wpisellmedia-upload', plugins_url('js/wpisell_media_handler.js',__FILE__), array('jquery','media-upload','thickbox'));
-        wp_enqueue_script('wpisellmedia-upload');
-        }
+		//media uploader specific scripts
+		global $post;
+		if( ! empty( $post ) && $post->post_type=="isell-product"){
+			wp_enqueue_script('media-upload');
+			wp_enqueue_script('thickbox');
+			wp_register_script('wpisellmedia-upload', plugins_url('js/wpisell_media_handler.js',__FILE__), array('jquery','media-upload','thickbox'));
+			wp_enqueue_script('wpisellmedia-upload');
+		}
 		//these scripts are only added to the admin screen
 		wp_enqueue_style( 'isell-all.css', plugins_url('css/all.css',__FILE__), array(), ISELL_VERSION );
 		//wp_enqueue_style( 'wp-jquery-ui-dialog' );
@@ -301,7 +306,7 @@ Class WordPress_iSell{
 	}
     function admin_styles(){
         global $post;
-        if($post->post_type=="isell-product"){
+        if(! empty( $post ) && $post->post_type=="isell-product"){
         wp_enqueue_style('thickbox');
         }
     }
@@ -371,9 +376,14 @@ Class WordPress_iSell{
 	  	register_post_type('isell-product',$product_args);
 	  	register_post_type('isell-order',$order_args);
 	}
+        
+        function isell_enqueue_scripts()
+        {
+            wp_enqueue_style( 'isell-style', plugins_url('css/isell_style.css',__FILE__), array(), ISELL_VERSION );
+        }
 
 	function add_meta_boxes(){
-		add_meta_box( 
+			add_meta_box( 
         'product_info_meta_box',
         __( 'Product Info', 'isell' ),
         array($this,'product_info_metabox'),
@@ -595,13 +605,16 @@ Class WordPress_iSell{
 		$product_name = stripslashes($_POST['product_name']);
 		$product_price = stripslashes($_POST['product_price']);
 		$product_file_name = stripslashes($_POST['product_file_name']);
-        $product_file_url = stripslashes($_POST['product_file_url']);
-        $simpledloption = "no";
-        if(isset($_POST["isell_simple_download_checkbox"])){
-            if($_POST["isell_simple_download_checkbox"]=="yes"){
-                $simpledloption = "yes";
-            }
-        }
+		$product_file_url = stripslashes($_POST['product_file_url']);
+
+		$product_thumbnail_url = stripslashes($_POST['product_thumbnail_url']);
+
+		$simpledloption = "no";
+		if(isset($_POST["isell_simple_download_checkbox"])){
+				if($_POST["isell_simple_download_checkbox"]=="yes"){
+						$simpledloption = "yes";
+				}
+		}
 		//change the post title to product name
 		remove_action('save_post',array($this,'save_product_metabox_settings'));
 		
@@ -621,8 +634,10 @@ Class WordPress_iSell{
 		
 		update_post_meta($post_id,'product_name',$product_name);
 		update_post_meta($post_id,'product_file_name',$product_file_name);
-        update_post_meta($post_id,'product_file_url',$product_file_url);
-        update_post_meta($post_id,'isell_simple_download_checkbox',$simpledloption);
+		update_post_meta($post_id,'product_file_url',$product_file_url);
+		update_post_meta($post_id,'isell_simple_download_checkbox',$simpledloption);
+
+		update_post_meta($post_id,'product_thumbnail_url',$product_thumbnail_url);
 		
 		if ( is_numeric($product_price) )
 			update_post_meta($post_id,'product_price',$product_price);
@@ -1053,6 +1068,39 @@ Class WordPress_iSell{
 
 
 	}
+        
+        function wp_isell_download_display( $atts, $content = null )
+        {
+            extract( shortcode_atts( array(
+                'id' => '',
+                'text' => 'Buy Now',
+                'no_grid' => '1',
+            ), $atts ) );
+            
+            if(empty($id)){
+                return __('Please specify a product ID in the shortcode','isell');
+            }
+            $product_thumbnail_url = get_post_meta($id,'product_thumbnail_url',true);
+            $product_name = get_post_meta($id,'product_name',true);
+            $product_price = get_post_meta($id, 'product_price', true );
+            $options = isell_get_options();
+            $currency = $options['store']['currency'];
+            $buy_now_link = isell_generate_product_url($id);
+            $output = <<<EOT
+            <div class="isell_style1">
+              <div class="isell_style1_wrap">
+                <div class="isell_style1_thumb"><img src="$product_thumbnail_url" class="isell_thumbnail_img"></div>
+                <div class="isell_style1_name">$product_name</div>
+                <span class="isell_style1_price"><span class="amount">$product_price $currency</span></span>
+                <div class="isel_style1_buy_button"><a href="$buy_now_link" rel="nofollow" class="button ">$text</a></div>
+              </div>
+            </div>            
+EOT;
+            if($no_grid == '1'){
+                $output .= '<div class="isell_clear_float"></div>';
+            }
+            return $output;
+        }
 
 	function readfile_chunked($filename, $retbytes = TRUE){
 	    $buffer = '';
@@ -1099,13 +1147,15 @@ Class WordPress_iSell{
 	  unset( $columns['title'] );
 	  
 	  return array_merge( $columns, 
-	  			array( 
-	  					'title' => __( 'Name' ,'isell' ),
-	  					'price' => __( 'Price', 'isell' ),
-	  					'sales' => __( 'Sales', 'isell' ),
-	  					'buy_now_url' => __( 'Buy Now URL', 'isell' )
-	  				)
-	  			 ); 
+			array( 
+                                        'id' => __( 'ID' ,'isell' ), 
+					'thumbnail' => __( 'Thumbnail' ,'isell' ),
+					'title' => __( 'Name' ,'isell' ),
+					'price' => __( 'Price', 'isell' ),
+					'sales' => __( 'Sales', 'isell' ),
+					'buy_now_url' => __( 'Buy Now URL', 'isell' )
+				)
+			 ); 
 	  
   }
   
@@ -1114,6 +1164,20 @@ Class WordPress_iSell{
 	  $currency = $options['store']['currency'];
 	  
 	  switch ( $column ) {
+              
+                  case 'id':
+		  	
+		  	printf( '<p>%s</p>', $post_id );
+                      
+		  	break;
+
+		  case 'thumbnail':
+		  	
+		  	$product_thumbnail_url = get_post_meta($post_id,'product_thumbnail_url',true);
+		  	if ( $product_thumbnail_url )
+		  		printf( '<img src="%s" width="70" />', $product_thumbnail_url );
+		  	
+		  	break;
 		  
 		  case 'price':
 		  	
