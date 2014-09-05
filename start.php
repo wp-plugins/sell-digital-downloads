@@ -4,8 +4,8 @@ Plugin Name: WordPress iSell - Sell Digital Downloads
 Description: All in one plugin to sell your digital products and manage your orders from WordPress.
 Author: wpecommerce
 Version: 2.1.9
-Author URI: http://wp-ecommerce.net/
-Plugin URI: http://wp-ecommerce.net/?p=1916
+Author URI: https://wp-ecommerce.net/
+Plugin URI: https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916
 */
 
 define( 'iSell_Path', plugin_dir_path(__FILE__) );

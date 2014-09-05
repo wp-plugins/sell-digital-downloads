@@ -1,6 +1,6 @@
 <div class="wrap">
 <div id="icon-options-general" class="icon32"><br></div><h2><?php echo __('Settings','isell'); ?></h2>
-<div class="update-nag">Please visit the <a target="_blank" href="http://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916">WP iSell</a> documentation page for usage instructions.</div>
+<div class="update-nag">Please visit the <a target="_blank" href="https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916">WP iSell</a> documentation page for usage instructions.</div>
 <?php if($debug_reset_notice != ''){
         if($debug_reset_notice == '1'){ ?>
             <div id="message" class="updated fade"><p><strong><?php echo __('Debug log file has been reset!'); ?></strong></p></div>

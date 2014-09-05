@@ -163,7 +163,7 @@ function isell_settings_page(){
 
 function isell_support_forum_redirect() {
 
-	$link = 'http://wp-ecommerce.net/?p=1916';
+	$link = 'https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916';
 	wp_redirect( $link );
 
 }
