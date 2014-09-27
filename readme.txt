@@ -31,7 +31,11 @@ WordPress iSell is a simple WordPress plugin to sell digital downloads. It integ
 * Upload thumbnails for your downloads
 * Create a product display box using a shortcode
 
-For detailed documentation please visit the [WordPress Sell Digital Downloads](https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916) plugin page
+For detailed documentation please visit the [WordPress Sell Digital Downloads](https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916) plugin page.
+
+= Get involved =
+
+Developers can contribute to the source code on the [Sell Digital Downloads GitHub Repository](https://github.com/wpcommerce/sell-digital-downloads).
 
 == Installation ==
 
