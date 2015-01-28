@@ -1,7 +1,7 @@
 === Sell Digital Downloads ===
 Contributors: wpecommerce
 Donate link: https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916
-Tags: sell digital products,sell downloads,sell download,sell products,ecommerce,commerce,paypal,paypal ipn,orders,sell photos,sell ebook,selling,e-downloads,e-store,eshop,download,downloads,digital downloads,e-commerce,wp ecommerce,sell videos
+Tags: sell digital products, sell downloads, sell download, sell products, ecommerce, commerce, paypal, paypal ipn, orders, sell photos, sell ebook, selling, e-downloads, e-store, eshop, download, downloads, digital downloads, e-commerce, wp ecommerce, sell videos
 Requires at least: 3.0
 Tested up to: 4.1
 Stable tag: 2.2.1
