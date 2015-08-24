@@ -3,8 +3,8 @@ Contributors: wpecommerce
 Donate link: https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916
 Tags: sell digital products, sell downloads, sell download, sell products, ecommerce, commerce, paypal, paypal ipn, orders, sell photos, sell ebook, selling, e-downloads, e-store, eshop, download, downloads, digital downloads, e-commerce, wp ecommerce, sell videos 
 Requires at least: 3.0
-Tested up to: 4.2
-Stable tag: 2.2.2
+Tested up to: 4.3
+Stable tag: 2.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ Yes
 For screenshots please visit the [WordPress Sell Digital Downloads](https://wp-ecommerce.net/wordpress-isell-easily-sell-digital-downloads-from-your-wordpress-site-1916) plugin page
 
 == Changelog ==
+
+= 2.2.3 =
+* Sell Digital Downloads is now compatible with WordPress 4.3.
 
 = 2.2.2 =
 * Updated description in the plugin settings.
